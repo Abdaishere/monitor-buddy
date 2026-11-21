@@ -2359,6 +2359,9 @@ function chrome() {
       h("li", {}, h("a", { href: S.about.projectUrl, target: "_blank", rel: "noopener" }, S.about.project)),
       h("li", {}, h("a", { href: S.about.guideUrl, target: "_blank", rel: "noopener" }, S.about.guide)),
       h("li", {}, h("a", { href: S.about.issueUrl, target: "_blank", rel: "noopener" }, S.about.issue))),
+    h("p", { class: "about__credit" }, S.about.fork,
+      h("a", { href: S.about.forkUrl, target: "_blank", rel: "noopener" }, S.about.forkName), " · ",
+      h("a", { href: S.about.creditsUrl, target: "_blank", rel: "noopener" }, S.about.credits)),
     h("p", { class: "about__credit" }, `${S.about.copyright} `,
       h("a", { href: S.about.authorUrl, target: "_blank", rel: "noopener" }, S.about.author), " · ",
       h("a", { href: S.about.licenceUrl, target: "_blank", rel: "noopener" }, S.about.licence)));

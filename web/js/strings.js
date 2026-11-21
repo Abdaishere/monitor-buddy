@@ -75,6 +75,12 @@ export const S = {
     guideUrl: "https://github.com/Abdaishere/monitor-buddy#set-up",
     issue: "Report a problem",
     issueUrl: "https://github.com/Abdaishere/monitor-buddy/issues",
+    // Credit to the project this one is forked from, and the full list.
+    fork: "A fork of ",
+    forkName: "Monitor-Buddy by IdefixRC",
+    forkUrl: "https://github.com/IdefixRC/Monitor-Buddy",
+    credits: "All credits",
+    creditsUrl: "https://github.com/Abdaishere/monitor-buddy/blob/main/docs/blog/CREDITS.md",
     // The copyright line LICENSE asks for, with the licence beside it.
     copyright: "© 2026",
     author: "IdefixRC",

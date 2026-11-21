@@ -10,7 +10,7 @@
 
 ![Monitor Buddy on its keyboard dock, showing the date](docs/blog/images/cover-4x3.jpg)
 
-This is a fork of [Monitor-Buddy by IdefixRC](https://github.com/IdefixRC/Monitor-Buddy) (MIT, see [LICENSE](LICENSE)). It adds firmware that follows Odoo, GitHub, Google Calendar and Claude Code, a laptop helper, AES-256-GCM sealed Wi-Fi, signed updates over the air, knock and shake gestures, and a two-part keyboard dock.
+This is a fork of [Monitor-Buddy](https://github.com/IdefixRC/Monitor-Buddy) by [IdefixRC](https://github.com/IdefixRC) (MIT, see [LICENSE](LICENSE) and [NOTICE](NOTICE)). The base firmware, the web flasher and the printed holder are their work; full [credits](#credits) are below. It adds firmware that follows Odoo, GitHub, Google Calendar and Claude Code, a laptop helper, AES-256-GCM sealed Wi-Fi, signed updates over the air, knock and shake gestures, and a two-part keyboard dock.
 
 | | | |
 |---|---|---|
@@ -172,7 +172,7 @@ To swap the keys for new ones (for example after lending the Buddy to someone): 
 - **The story**, with diagrams and measurements: [docs/blog/POST.md](docs/blog/POST.md)
 - **Everything it can show**, page by page: the [PDF guide](docs/Monitor-Buddy-Guide.pdf)
 - **How everything works** (for maintainers): [docs/HANDOVER.md](docs/HANDOVER.md)
-- **Credits and licences**: [docs/blog/CREDITS.md](docs/blog/CREDITS.md)
+- **Credits and licences**: [Credits](#credits) below, [docs/blog/CREDITS.md](docs/blog/CREDITS.md) and [NOTICE](NOTICE)
 - **What may come next**: [ROADMAP.md](ROADMAP.md)
 
 ### Build it yourself (developers)
@@ -196,6 +196,18 @@ Settings and keys live on the board, not in the build: `config/config.h` (copy i
 - **3D models**: not in this repository. The dock's head is built on IdefixRC's holder, which is under the MakerWorld Exclusive License, so the dock is published on MakerWorld only, as a remix of the [original model](https://makerworld.com/en/models/3241960-monitor-buddy).
 - **Animations** in `sdcard/gifs`: drawn by `tools/buddy_art.py`, MIT like the code.
 - **Photos, renders and diagrams** in `docs/blog`: by Abdallah El Belkasy.
+
+## Credits
+
+- **The original**: [Monitor-Buddy](https://github.com/IdefixRC/Monitor-Buddy) by [IdefixRC](https://github.com/IdefixRC) and its contributors [AmyJoT](https://github.com/AmyJoT) and [Killo1988](https://github.com/Killo1988), MIT licence. The base firmware, the settings engine, the web flasher and the [printed holder](https://makerworld.com/en/models/3241960-monitor-buddy).
+- **Where the original came from**: the Tiny ESP DeskBuddy idea from [schematik.io](https://schematik.io/) and the face designs of [DESKBUDDY-1.0](https://github.com/EDISON-SCIENCE-CORNER/DESKBUDDY-1.0) by Edison Science Corner.
+- **Firmware libraries**: [Arduino_GFX](https://github.com/moononournation/Arduino_GFX), [ArduinoJson](https://arduinojson.org/), [U8g2](https://github.com/olikraus/u8g2) and its fonts, [AnimatedGIF](https://github.com/bitbank2/AnimatedGIF), [AyresWiFiManager](https://github.com/ayresnet/AyresWiFiManager) in the [IdefixRC fork](https://github.com/IdefixRC/AyresWiFiManager), [Unity](https://github.com/ThrowTheSwitch/Unity), and the Arduino core for ESP32 through [pioarduino](https://github.com/pioarduino).
+- **Browser installer**: [esptool-js](https://github.com/espressif/esptool-js) by Espressif (Apache-2.0) and [posix_tz_db](https://github.com/nayarsystems/posix_tz_db) by Nayar Systems (MIT).
+- **Laptop tools**: [cryptography](https://cryptography.io/), [python-dateutil](https://github.com/dateutil/dateutil), [Pillow](https://python-pillow.org/), [pyserial](https://github.com/pyserial/pyserial) and the [GitHub CLI](https://cli.github.com/).
+- **Data**: weather by [Open-Meteo](https://open-meteo.com/) (CC BY 4.0).
+- **Renders**: lighting maps and the wood texture from [Poly Haven](https://polyhaven.com) (CC0).
+
+Every licence, and what each part is used for, is in [docs/blog/CREDITS.md](docs/blog/CREDITS.md).
 
 ## The original project
 

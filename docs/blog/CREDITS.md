@@ -1,8 +1,11 @@
 # Credits
 
+Monitor Buddy is a fork. Most of what makes it nice was there before me, so thank you to IdefixRC and everyone listed here. The short legal version is in [NOTICE](../../NOTICE) and [LICENSE](../../LICENSE).
+
 ## The project it started from
 
 - **[Monitor-Buddy](https://github.com/IdefixRC/Monitor-Buddy)** by IdefixRC and its contributors, MIT licence (Copyright (c) 2026 IdefixRC). The base firmware, the settings engine, the web flasher and the printed holder ([MakerWorld model](https://makerworld.com/en/models/3241960-monitor-buddy)). The MIT licence text must travel with any copy of the code.
+- **Upstream contributors**: [AmyJoT](https://github.com/AmyJoT) (brightness swipe, a sturdier touch read, the first network changes that keep the screen responsive) and [Killo1988](https://github.com/Killo1988) (Coinbase chart, 12-hour clock, night mode and a batch of fixes).
 - **[Tiny ESP DeskBuddy](https://schematik.io/)** from schematik.io, the idea upstream started from.
 - **[DESKBUDDY-1.0](https://github.com/EDISON-SCIENCE-CORNER/DESKBUDDY-1.0)** by Edison Science Corner, the face designs upstream builds on.
 
@@ -33,7 +36,7 @@
 | Part | By | Licence | Used for |
 |---|---|---|---|
 | [esptool-js](https://github.com/espressif/esptool-js) | Espressif | Apache-2.0 | Writes the firmware from the browser |
-| [posix_tz_db](https://github.com/nayarsystems/posix_tz_db) | Nayar Systems | MIT | Time zone rules for the city search |
+| [posix_tz_db](https://github.com/nayarsystems/posix_tz_db) | Nayar Systems | MIT | Time zone rules for the city search, generated from the [IANA time zone database](https://www.iana.org/time-zones) (public domain) |
 
 The live preview in the app (`tools/app/sim`) is the firmware and the libraries above, compiled with [Emscripten](https://emscripten.org/) (MIT).
 
