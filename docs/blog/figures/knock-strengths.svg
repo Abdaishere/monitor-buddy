@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="680" viewBox="0 0 900 680" role="img" aria-labelledby="t d" font-family="Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"><title id="t">How hard is a knock?</title><desc id="d">Jolts in g on a log scale. At rest on the desk: 0.01–0.05 g; Desk bumps, now and then: 0.10–0.17 g; Desk knocks, first method: 0.08–0.19 g; Knocks on the buddy, final method: 0.27–3.2 g; Screen taps and handling: 1.1–2.5 g. A knock starts at 0.25 g; still means under 0.08 g; a second knock needs 25 % of the first.</desc><rect x="0.5" y="0.5" width="899" height="679" rx="14" fill="#FBF9FA" stroke="#E6DDE3"/><text x="40.0" y="54.0" font-size="27" font-weight="700" fill="#241A22" text-anchor="start">How hard is a knock?</text>
+<text x="40.0" y="84.0" font-size="16" font-weight="400" fill="#55464F" text-anchor="start">Jolts measured on the board, in g, on a log scale</text>
+<rect x="40.0" y="112.0" width="14.0" height="14.0" rx="3" fill="#7A3A6C"/>
+<text x="62.0" y="124.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">knocks, final method</text>
+<rect x="211.7" y="112.0" width="14.0" height="14.0" rx="3" fill="#1F9AA3"/>
+<text x="233.7" y="124.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">knocks, first method</text>
+<rect x="381.1" y="112.0" width="14.0" height="14.0" rx="3" fill="#BDB1BA"/>
+<text x="403.1" y="124.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">not a knock</text>
+<rect x="605.1" y="188.0" width="254.9" height="308.0" rx="0" fill="#F4EDF2"/>
+<line x1="372.0" y1="188.0" x2="372.0" y2="496.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="372.0" y="518.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="middle">0.01</text>
+<line x1="451.6" y1="188.0" x2="451.6" y2="496.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="451.6" y="518.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="middle">0.03</text>
+<line x1="538.7" y1="188.0" x2="538.7" y2="496.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="538.7" y="518.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="middle">0.1</text>
+<line x1="618.3" y1="188.0" x2="618.3" y2="496.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="618.3" y="518.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="middle">0.3</text>
+<line x1="705.5" y1="188.0" x2="705.5" y2="496.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="705.5" y="518.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="middle">1</text>
+<line x1="785.0" y1="188.0" x2="785.0" y2="496.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="785.0" y="518.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="middle">3</text>
+<text x="822.0" y="540.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="end">jolt, g (log scale)</text>
+<line x1="522.6" y1="158.0" x2="522.6" y2="496.0" stroke="#9A8A96" stroke-width="1.2" stroke-linecap="round"/>
+<text x="516.6" y="170.0" font-size="13" font-weight="600" fill="#55464F" text-anchor="end">still: under 0.08 g</text>
+<line x1="605.1" y1="158.0" x2="605.1" y2="496.0" stroke="#9A8A96" stroke-width="1.2" stroke-linecap="round"/>
+<text x="611.1" y="170.0" font-size="13" font-weight="600" fill="#55464F" text-anchor="start">a knock starts at 0.25 g</text>
+<text x="358.0" y="231.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="end">At rest on the desk</text>
+<rect x="372.0" y="217.0" width="116.5" height="18" rx="4" fill="#BDB1BA"><title>At rest on the desk: 0.01–0.05 g</title></rect>
+<text x="496.5" y="231.0" font-size="14" font-weight="400" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">0.01–0.05</text>
+<text x="358.0" y="291.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="end">Desk bumps, now and then</text>
+<rect x="538.7" y="277.0" width="38.4" height="18" rx="4" fill="#BDB1BA"><title>Desk bumps, now and then: 0.10–0.17 g</title></rect>
+<text x="585.2" y="291.0" font-size="14" font-weight="400" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">0.10–0.17</text>
+<text x="358.0" y="344.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="end">Desk knocks, first method</text>
+<text x="358.0" y="363.0" font-size="13" font-weight="400" fill="#55464F" text-anchor="end">change of the total pull</text>
+<rect x="522.6" y="337.0" width="62.6" height="18" rx="4" fill="#1F9AA3"><title>Desk knocks, first method: 0.08–0.19 g</title></rect>
+<text x="593.2" y="351.0" font-size="14" font-weight="400" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">0.08–0.19</text>
+<text x="358.0" y="404.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="end">Knocks on the buddy, final method</text>
+<text x="358.0" y="423.0" font-size="13" font-weight="400" fill="#55464F" text-anchor="end">change in every direction</text>
+<rect x="610.7" y="397.0" width="179.0" height="18" rx="4" fill="#7A3A6C"><title>Knocks on the buddy, final method: 0.27–3.2 g</title></rect>
+<text x="797.7" y="411.0" font-size="14" font-weight="400" fill="#241A22" text-anchor="start" stroke="#F4EDF2" stroke-width="5" stroke-linejoin="round" paint-order="stroke">0.27–3.2</text>
+<text x="358.0" y="464.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="end">Screen taps and handling</text>
+<text x="358.0" y="483.0" font-size="13" font-weight="400" fill="#55464F" text-anchor="end">turned away by the touch, or by moving on</text>
+<rect x="712.4" y="457.0" width="59.4" height="18" rx="4" fill="#BDB1BA"><title>Screen taps and handling: 1.1–2.5 g</title></rect>
+<text x="779.8" y="471.0" font-size="14" font-weight="400" fill="#241A22" text-anchor="start" stroke="#F4EDF2" stroke-width="5" stroke-linejoin="round" paint-order="stroke">1.1–2.5</text>
+<rect x="40.0" y="563.0" width="10.0" height="10.0" rx="2" fill="#1F9AA3"/>
+<text x="58.0" y="573.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">First method: desk knocks overlap the desk bumps and sit just above rest. No threshold splits them.</text>
+<rect x="40.0" y="587.0" width="10.0" height="10.0" rx="2" fill="#7A3A6C"/>
+<text x="58.0" y="597.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">Final method: every knock clears 0.25 g while rest stays under 0.08 g.</text>
+<rect x="40.0" y="611.0" width="10.0" height="10.0" rx="2" fill="#BDB1BA"/>
+<text x="58.0" y="621.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">A second knock must reach 25 % of the first; weaker jolts are the buddy rocking on its stand.</text>
+<text x="40.0" y="658.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="start">Measured on the real board, 18–19 November 2026.</text></svg>

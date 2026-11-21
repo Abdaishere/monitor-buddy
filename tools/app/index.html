@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Monitor Buddy</title>
+<link rel="icon" href="icon.svg">
+<style>
+  :root { --bg: #f5f4f0; --card: #fff; --text: #1b1b1f; --muted: #5f5e5a; --border: #dcdad2; --accent: #0f6e56; --accent-soft: #e3f1ec; --warn: #a06400; --bad: #b3261e; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #17171a; --card: #222226; --text: #f1f1f3; --muted: #a3a3ab; --border: #37373d; --accent: #5dcaa5; --accent-soft: #1d3a32; --warn: #e0a83a; --bad: #ff8a80; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, sans-serif; }
+  header { display: flex; align-items: center; gap: .75rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); }
+  header img { width: 36px; height: 36px; }
+  header b { font-size: 1.1rem; }
+  header span { color: var(--muted); font-size: .9rem; display: block; }
+  main { max-width: 720px; margin: 0 auto; padding: 1.25rem 1.5rem 3rem; }
+  .tabs { display: flex; gap: .5rem; margin-bottom: 1.25rem; }
+  .tabs button { flex: 1; padding: .7rem; border: 1px solid var(--border); background: var(--card); color: var(--text); border-radius: 12px; font: inherit; font-weight: 600; cursor: pointer; }
+  .tabs button[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem 1.25rem; margin-bottom: 1rem; }
+  h2 { font-size: 1.05rem; margin: 0 0 .6rem; }
+  p { margin: .4rem 0; }
+  .muted { color: var(--muted); font-size: .92rem; }
+  label.tick { display: flex; gap: .7rem; align-items: flex-start; padding: .55rem 0; cursor: pointer; }
+  label.tick input { flex: none; width: 1.2rem; height: 1.2rem; margin-top: .2rem; accent-color: var(--accent); }
+  label.tick small { display: block; color: var(--muted); }
+  button.go { background: var(--accent); color: var(--bg); border: 0; border-radius: 12px; padding: .8rem 1.4rem; font: inherit; font-weight: 700; cursor: pointer; }
+  button.go:disabled { opacity: .5; cursor: default; }
+  button.plain { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 999px; padding: .45rem .9rem; font: inherit; cursor: pointer; }
+  ul.list { list-style: none; margin: 0; padding: 0; }
+  ul.list li { position: relative; padding: .25rem 0 .25rem 1.7rem; }
+  ul.list li::before { position: absolute; left: 0; font-weight: 700; }
+  li.ok::before { content: "✓"; color: var(--accent); }
+  li.todo::before { content: "!"; color: var(--warn); }
+  li.info::before { content: "•"; color: var(--muted); }
+  li.would::before { content: "→"; color: var(--muted); }
+  li.step { padding-left: 0 !important; margin-top: .7rem; font-weight: 700; }
+  li.step:first-child { margin-top: 0; }
+  li small { display: block; color: var(--muted); }
+  .bar { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; margin: .6rem 0 1rem; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+  .error { color: var(--bad); font-weight: 600; }
+  .say { display: flex; gap: .6rem; }
+  .say input { flex: 1; padding: .75rem .9rem; border: 1px solid var(--border); border-radius: 12px; font: inherit; background: var(--bg); color: var(--text); min-width: 0; }
+  .quick { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .9rem; }
+  .demo { background: #f4c542; color: #1b1b1f; text-align: center; padding: .4rem; font-weight: 600; }
+  .field { margin: .9rem 0; }
+  .field > label, .field > .legend { display: block; font-weight: 600; margin-bottom: .3rem; }
+  .field small { display: block; color: var(--muted); margin-top: .25rem; }
+  .field input[type=text], .field input.text, .field select { width: 100%; padding: .6rem .8rem; border: 1px solid var(--border); border-radius: 10px; font: inherit; background: var(--bg); color: var(--text); }
+  .field .bad { color: var(--bad); font-weight: 600; }
+  .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .8rem; }
+  .choices { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .choices label { display: flex; align-items: center; gap: .4rem; border: 1px solid var(--border); border-radius: 10px; padding: .45rem .7rem; cursor: pointer; background: var(--bg); }
+  .choices label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  .choices.faces label { flex-direction: column; flex: 1 1 110px; }
+  .choices.faces img { width: 100%; max-width: 160px; border-radius: 6px; image-rendering: pixelated; }
+  .choices input { accent-color: var(--accent); }
+  body.wide main { max-width: 1180px; }
+  .editor { display: grid; grid-template-columns: minmax(340px, 520px) minmax(320px, 1fr); gap: 1.25rem; align-items: start; }
+  .stage { position: sticky; top: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; }
+  .device { background: #0b0b0d; border-radius: 18px; padding: 14px; box-shadow: inset 0 0 0 2px #2a2a30; }
+  .device canvas { display: block; width: 100%; height: auto; aspect-ratio: 320 / 172; image-rendering: pixelated; border-radius: 6px; background: #000; touch-action: none; cursor: pointer; }
+  .stage-bar { display: flex; align-items: center; gap: .5rem; margin: .7rem 0 .5rem; }
+  .stage-bar b { flex: 1; text-align: center; }
+  .strip { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .5rem; }
+  .chip { border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 999px; padding: .2rem .65rem; font: inherit; font-size: .85rem; cursor: pointer; }
+  .chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+  .apply { border-top: 1px solid var(--border); margin-top: .8rem; padding-top: .6rem; }
+  button.small { padding: .2rem .6rem; font-size: .9rem; }
+  button.plain:disabled { opacity: .45; cursor: default; }
+  ol.round { list-style: none; margin: 0; padding: 0; }
+  ol.round li { display: flex; align-items: center; gap: .55rem; padding: .4rem .5rem; border: 1px solid var(--border); border-radius: 10px; margin-bottom: .35rem; background: var(--bg); }
+  ol.round li.off .what { opacity: .5; }
+  ol.round li.over { border-color: var(--accent); background: var(--accent-soft); }
+  ol.round li.dragging { opacity: .4; }
+  ol.round .grip { cursor: grab; color: var(--muted); user-select: none; }
+  ol.round .what { flex: 1; min-width: 0; }
+  ol.round .what small { margin: 0; }
+  ol.round input { width: 1.1rem; height: 1.1rem; accent-color: var(--accent); flex: none; }
+  ul.backups li { display: flex; justify-content: space-between; align-items: center; padding-left: 0; }
+  details summary { cursor: pointer; }
+  @media (max-width: 860px) { .editor { grid-template-columns: 1fr; } .stage { position: static; } }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="demo" class="demo" hidden>Demo: a pretend Buddy. Nothing on this computer is changed.</div>
+<header><img src="icon.svg" alt=""><div><b>Monitor Buddy</b><span>Set it up, make it yours, see every change before it is on the Buddy</span></div></header>
+<main>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-setup" aria-selected="true">Set up</button>
+    <button role="tab" id="tab-yours" aria-selected="false">Make it yours</button>
+    <button role="tab" id="tab-say" aria-selected="false">Say something</button>
+  </div>
+
+  <section id="setup">
+    <div class="card" id="closed" hidden>
+      <h2>This page has expired</h2>
+      <p>Open <b>Monitor Buddy</b> from your app menu again.</p>
+    </div>
+
+    <div class="card" id="needs" hidden>
+      <h2>One thing first</h2>
+      <p>This computer is missing a few small parts the Buddy's tools need.</p>
+      <p><button class="go" id="install">Install them</button></p>
+      <p class="muted" id="needs-how"></p>
+      <p class="error" id="needs-error" role="alert"></p>
+    </div>
+
+    <div class="card" id="no-helper" hidden>
+      <h2>On this computer</h2>
+      <p>Here the app is the Buddy's editor: open <b>Make it yours</b> to change its pages, look and settings with a live preview, and apply them over the USB cable.</p>
+      <p class="muted">The background helper (lock state, meetings, Claude Code, "Say something") is set up on Linux.</p>
+    </div>
+
+    <div id="ready" hidden>
+      <div class="card">
+        <h2>Before you start</h2>
+        <p>Plug the Buddy into this computer with its USB cable. The firmware must be on it already: that is done from the <a href="https://abdaishere.github.io/monitor-buddy/" target="_blank" rel="noopener">installer page</a>.</p>
+        <p class="muted">Setup makes two secret keys on this computer and hands them to the Buddy over the cable. They are never shown and never leave this computer any other way.</p>
+      </div>
+      <div class="card">
+        <h2>Optional parts</h2>
+        <label class="tick"><input type="checkbox" id="odoo"><span>Chrome extension<small>A toolbar button to show a line on the Buddy, and for accounts on www.odoo.com your hours and tasks. One step in Chrome is left for you; setup says which.</small></span></label>
+        <label class="tick"><input type="checkbox" id="claude"><span>Claude Code sessions<small>The Buddy shows when a session waits for you or has finished.</small></span></label>
+        <label class="tick"><input type="checkbox" id="fish"><span>Long terminal commands (fish shell)<small>The Buddy says DONE or FAILED when a command that ran over a minute ends.</small></span></label>
+        <label class="tick" id="repair-row" hidden><input type="checkbox" id="repair"><span>This Buddy was paired with another computer: pair it with this one instead<small>The other computer can then no longer reach it.</small></span></label>
+        <p class="muted">Parts this computer cannot use are skipped by themselves, with a note.</p>
+      </div>
+      <p><button class="go" id="start">Set up</button> <span class="muted" id="again" hidden>Safe to run again: it only does what is left.</span></p>
+    </div>
+
+    <div class="card" id="running" hidden>
+      <h2 id="running-title">Setting up…</h2>
+      <div class="bar"><i id="bar"></i></div>
+      <ul class="list" id="steps" aria-live="polite"></ul>
+      <p class="error" id="failed" role="alert"></p>
+    </div>
+
+    <div class="card" id="summary" hidden>
+      <h2>Works now</h2>
+      <ul class="list" id="works"></ul>
+      <div id="left-box" hidden>
+        <h2 style="margin-top:1rem">Left to do</h2>
+        <ul class="list" id="left"></ul>
+      </div>
+      <p class="muted" id="all-set" hidden>All set. You can close this page; the helper keeps running in the background.</p>
+    </div>
+  </section>
+
+  <section id="yours" hidden>
+    <div class="card" id="yours-load">
+      <h2>Your Buddy's settings</h2>
+      <p>Plug the Buddy into this computer with its USB cable. Its settings are read from it; nothing changes on it until you press Apply.</p>
+      <p><button class="go" id="yours-read">Read the settings</button> <button class="plain" id="yours-sample" type="button" hidden>Look around without a Buddy</button></p>
+      <p class="error" id="yours-error" role="alert"></p>
+    </div>
+    <form id="yours-form" hidden>
+      <div class="editor">
+        <aside class="stage">
+          <div class="device"><canvas id="screen" width="320" height="172" aria-label="Preview of the Buddy's screen"></canvas></div>
+          <div class="stage-bar">
+            <button type="button" class="plain small" id="stage-prev" title="Swipe to the page before">‹</button>
+            <b id="stage-page"></b>
+            <button type="button" class="plain small" id="stage-next" title="Swipe to the next page">›</button>
+            <button type="button" class="plain small" id="stage-knock" title="Knock twice on the Buddy">Knock knock</button>
+          </div>
+          <div class="strip" id="strip" aria-label="The pages, in the Buddy's order"></div>
+          <p class="muted" id="stage-note" role="status"></p>
+          <p class="muted">The real firmware, drawing for this page as it will on the Buddy. Tap or swipe it. Prices, weather and the work pages show sample numbers.</p>
+          <div class="apply">
+            <p id="yours-pending" role="status"></p>
+            <p><button class="go" id="yours-save">Apply to the Buddy</button> <button type="button" class="plain" id="yours-discard">Discard changes</button></p>
+            <p><button type="button" class="plain" id="yours-undo">Undo the last Apply</button></p>
+            <p id="yours-result" role="status"></p>
+            <details id="yours-earlier"><summary>Earlier settings</summary><ul class="list backups" id="yours-backups"></ul></details>
+            <p class="muted" id="yours-source"></p>
+            <p class="muted">Apply goes over the USB cable and the Buddy restarts. What it held before is kept on this computer, so every Apply can be undone.</p>
+          </div>
+        </aside>
+        <div id="yours-fields"></div>
+      </div>
+    </form>
+  </section>
+
+  <section id="say" hidden>
+    <div class="card">
+      <h2>Show a line on the Buddy</h2>
+      <form class="say" id="say-form">
+        <input id="say-text" maxlength="100" placeholder="Tea is ready" aria-label="What the Buddy should show" autocomplete="off">
+        <button class="go" id="say-go">Show</button>
+      </form>
+      <div class="quick" id="quick"></div>
+      <p id="say-result" role="status"></p>
+      <p class="muted">It stays on the screen for 20 seconds; a tap on the Buddy puts it away. About 100 characters fit.</p>
+    </div>
+  </section>
+</main>
+<script>
+"use strict";
+const hash = new URLSearchParams(location.hash.slice(1));
+const TOKEN = hash.get("t") || "";
+const $ = (id) => document.getElementById(id);
+const QUICK = ["Be right back", "In a call", "Lunch?", "Coffee time", "Do not disturb", "Good job today"];
+const STEPS = 8;   // the engine's numbered steps, for the progress bar
+let closed = false;
+
+async function api(path, body) {
+  const options = { headers: { "X-Buddy-Token": TOKEN } };
+  if (body !== undefined) { options.method = "POST"; options.body = JSON.stringify(body); options.headers["Content-Type"] = "application/json"; }
+  const response = await fetch(path, options);
+  if (response.status === 403) throw new Error("expired");
+  return response.json();
+}
+
+function expired() {
+  closed = true;
+  for (const id of ["needs", "ready", "running", "summary", "yours", "say", "no-helper"]) $(id).hidden = true;
+  show("setup");
+  $("closed").hidden = false;
+}
+
+function item(kind, text, how) {
+  const li = document.createElement("li");
+  li.className = kind;
+  li.textContent = text;   // text only: nothing from the computer is read as HTML
+  if (how) { const small = document.createElement("small"); small.textContent = how; li.append(small); }
+  return li;
+}
+
+function drawSummary(works, left) {
+  $("works").replaceChildren(...(works.length ? works.map((t) => item("ok", t)) : [item("info", "Nothing yet.")]));
+  $("left").replaceChildren(...left.map((l) => item("todo", l.text, l.how)));
+  $("left-box").hidden = left.length === 0;
+  $("all-set").hidden = left.length !== 0 || works.length === 0;
+  $("summary").hidden = false;
+}
+
+function drawSteps(events) {
+  $("steps").replaceChildren(...events.map((e) => item(e.kind, e.text, e.how)));
+  const done = events.filter((e) => e.kind === "step").length;
+  $("bar").style.width = `${Math.min(100, Math.round(done / STEPS * 100))}%`;
+}
+
+async function loadStatus() {
+  let status;
+  try { status = await api("/api/status"); } catch { return expired(); }
+  if (status.helper === false) {   // not Linux: the editor only
+    $("no-helper").hidden = false;
+    if (status.missing.length) {
+      $("needs").hidden = false;
+      $("install").hidden = true;
+      $("needs-how").textContent = `In a terminal: ${status.command}. Then open Monitor Buddy again.`;
+    }
+    return;
+  }
+  if (status.missing.length) {
+    $("needs").hidden = false;
+    $("ready").hidden = true;
+    $("install").hidden = !status.can_install;
+    $("needs-how").textContent = status.can_install
+      ? "Your computer asks for your password, then installs them. It takes a minute."
+      : `Install them with your package manager, then open Monitor Buddy again. On Ubuntu or Debian, in a terminal: ${status.command}`;
+    return;
+  }
+  $("needs").hidden = true;
+  $("ready").hidden = false;
+  for (const name of ["odoo", "claude", "fish"]) $(name).checked = status.answers[name];
+  $("repair-row").hidden = !status.left.some((l) => l.text.includes("another computer"));
+  $("again").hidden = !status.done_before;
+  if (status.done_before) drawSummary(status.works, status.left);
+}
+
+async function watch() {
+  let progress;
+  try { progress = await api("/api/progress"); } catch { return expired(); }
+  drawSteps(progress.events);
+  if (progress.running) return setTimeout(watch, 500);
+  $("bar").style.width = "100%";
+  $("running-title").textContent = progress.failed ? "Setup stopped" : "Done";
+  $("failed").textContent = progress.failed || "";
+  drawSummary(progress.works || [], progress.left || []);
+  $("start").disabled = false;
+  $("start").textContent = "Run setup again";
+  $("again").hidden = false;
+  $("repair-row").hidden = !(progress.left || []).some((l) => l.text.includes("another computer"));
+}
+
+$("start").addEventListener("click", async () => {
+  $("start").disabled = true;
+  $("summary").hidden = true;
+  $("running").hidden = false;
+  $("running-title").textContent = "Setting up…";
+  $("failed").textContent = "";
+  drawSteps([]);
+  let answer;
+  try {
+    answer = await api("/api/setup", { odoo: $("odoo").checked, claude: $("claude").checked, fish: $("fish").checked, repair: $("repair").checked });
+  } catch { return expired(); }
+  if (!answer.ok) { $("failed").textContent = answer.error; $("start").disabled = false; return; }
+  watch();
+});
+
+$("install").addEventListener("click", async () => {
+  $("install").disabled = true;
+  $("needs-error").textContent = "";
+  $("needs-how").textContent = "Installing… a password window may have opened behind this one.";
+  let answer;
+  try { answer = await api("/api/install", {}); } catch { return expired(); }
+  $("install").disabled = false;
+  if (!answer.ok) { $("needs-error").textContent = answer.error; $("needs-how").textContent = ""; return; }
+  loadStatus();
+});
+
+async function say(text) {
+  $("say-go").disabled = true;
+  $("say-result").className = "muted";
+  $("say-result").textContent = "Sending…";
+  let answer;
+  try { answer = await api("/api/say", { text }); } catch { $("say-go").disabled = false; return expired(); }
+  $("say-go").disabled = false;
+  $("say-result").className = answer.ok ? "" : "error";
+  $("say-result").textContent = answer.ok ? `On the Buddy now: ${answer.text}` : answer.error;
+  if (answer.ok) $("say-text").value = "";
+}
+$("say-form").addEventListener("submit", (event) => { event.preventDefault(); say($("say-text").value); });
+for (const line of QUICK) {
+  const button = document.createElement("button");
+  button.type = "button"; button.className = "plain"; button.textContent = line;
+  button.addEventListener("click", () => say(line));
+  $("quick").append(button);
+}
+
+// ── Make it yours: the editor. The settings are read from the Buddy over the cable, every change shows
+// at once on the preview (the firmware itself, built for the browser: sim/), Apply writes them to the Buddy ──
+const el = (tag, props = {}, ...kids) => {
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...kids.filter((k) => k !== null && k !== undefined));
+  return node;
+};
+const copy = (value) => JSON.parse(JSON.stringify(value));
+const hours = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => [from + i, `${String((from + i) % 24).padStart(2, "0")}:00`]);
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const DAYS_IN = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+// The pages of the round: name -> [id in the firmware, label, what it shows, the settings group it is switched in]
+const PAGES = {
+  face: [0, "Face", "The eyes: moods, and what your day is doing", "pages"],
+  clock: [1, "Clock", "The time, large", "pages"],
+  date: [2, "Date", "Weekday, day and year", "pages"],
+  weather: [3, "Weather", "Now, in your city", "pages"],
+  moon: [4, "Moon", "Tonight's phase", "pages"],
+  stock: [5, "Stocks", "Needs a Finnhub key (below)", "pages"],
+  coin: [7, "Coins", "Prices from Coinbase", "pages"],
+  github: [6, "GitHub", "Needs a GitHub username (below)", "pages"],
+  odoo: [9, "Odoo", "Hours and tasks, when the helper sends them", "more_pages"],
+  today: [12, "Today", "The day at a glance; by swipe, and by itself in the morning", "more_pages"],
+  claude: [14, "Claude", "Limits and open Claude Code sessions", "more_pages"],
+  prs: [10, "Pull requests", "Yours, while there are any", "more_pages"],
+  gifs: [11, "Animations", "The GIFs on the card (not in the preview)", "more_pages"],
+  game: [13, "Bug Hop", "A one-tap game; by swipe only", "more_pages"],
+  abda: [8, "AbdA", "The signature animation", "more_pages"],
+};
+const ROUND = Object.keys(PAGES);   // the order of a Buddy that was never told another
+const BY_ID = Object.fromEntries(ROUND.map((name) => [PAGES[name][0], name]));
+// What a Buddy with older firmware lacks: it gets these in the preview, and Apply says it needs the update.
+const NEWER = { more_pages: { abda: true, odoo: true, prs: true, gifs: true, today: true, game: true, claude: true }, page_order: [] };
+// A Buddy to look around with when none is plugged in.
+const SAMPLE = { name: "", buddy_name: "", face: "classic", greeting: "mix", greeting_text: "", work: { start: 9, end: 17, lunch: 12 }, weekend: "sat-sun",
+  birthday: "", break_min: 0, water: false, message: "", theme: 2, brightness: 180, mount: "left", clock_format: "24h", temp_unit: "celsius",
+  wind_unit: "kmh", night: { enabled: false, start: 23, end: 7, brightness: 26 },
+  pages: { face: true, clock: true, date: true, weather: true, moon: true, stock: true, github: true, coin: true }, github_user: "octocat",
+  lat: "38.7167", lon: "-9.1333", tz_name: "Europe/Lisbon", tz_rule: "WET0WEST,M3.5.0/1,M10.5.0", stocks: [{ symbol: "AAPL", on: true }],
+  coins: [{ pair: "BTC-USD", source: "coinbase", on: true }], ...copy(NEWER) };
+// Every setting this tab edits: [key or key.part, kind, label, hint, options]. A Buddy whose firmware lacks one does not get its field.
+const GROUPS = [
+  ["You and me", [
+    ["name", "text", "Your name", "Up to 12 characters. The Buddy greets you with it.", 12],
+    ["buddy_name", "text", "The Buddy's name", "Up to 12 characters. It introduces itself when it starts: the preview starts it for you.", 12],
+    ["face", "faces", "Face", "Every mood works in every style.", [["classic", "Classic"], ["cat", "Cat"], ["robot", "Robot"], ["minimal", "Minimal"]]],
+    ["greeting", "choice", "When you knock twice, it says", "", [["mix", "A mix"], ["hello", "HELLO"], ["yo", "YO"], ["salam", "SALAM"], ["custom", "A line of your own"]]],
+    ["greeting_text", "text", "Your own greeting", "Up to 26 characters. Used when you chose a line of your own.", 26],
+    ["message", "text", "A message for yourself", "Up to 26 characters, shown now and then. Empty for none.", 26],
+    ["birthday", "birthday", "Your birthday", "No year needed."],
+  ]],
+  ["Pages", [
+    ["round", "round", "The round of pages", "Drag a page, or use the arrows, to change the order. Untick one to leave it out. Show puts it on the preview."],
+  ]],
+  ["Look", [
+    ["theme", "choice", "Colours", "", [[0, "Classic"], [1, "Minimal"], [2, "Semantic"], [3, "Warm amber"], [4, "Cool teal"]]],
+    ["mount", "choice", "Which side of the monitor", "", [["left", "Left"], ["right", "Right"]]],
+    ["clock_format", "choice", "Clock", "", [["24h", "24 hours"], ["12h", "12 hours"]]],
+    ["temp_unit", "choice", "Temperature", "", [["celsius", "Celsius"], ["fahrenheit", "Fahrenheit"]]],
+    ["wind_unit", "choice", "Wind", "", [["kmh", "km/h"], ["mph", "mph"]]],
+    ["brightness", "level", "Brightness", ""],
+  ]],
+  ["Your day", [
+    ["work", "work", "Your working day", "Lunch nudge, lunch face and the end-of-day page follow these hours."],
+    ["weekend", "choice", "Days off", "The Buddy dozes on days off.", [["sat-sun", "Saturday and Sunday"], ["fri-sat", "Friday and Saturday"], ["fri", "Friday"], ["none", "None"]]],
+    ["break_min", "choice", "Stretch reminder during focus", "", [[0, "Off"], [25, "Every 25 minutes"], [50, "Every 50 minutes"], [90, "Every 90 minutes"]]],
+    ["water", "bool", "Remind me to drink water", "On the hour, during your working day."],
+    ["night", "night", "Night mode", "The screen dims and the Buddy sleeps between these hours."],
+  ]],
+  ["What the pages show", [
+    ["city", "city", "Your city", "For the weather and the clock. The search asks Open-Meteo for places with that name."],
+    ["github_user", "text", "GitHub username", "For the GitHub page. Empty hides it.", 39],
+    ["stocks", "list", "Stocks", "Up to 5 US symbols, with commas: AAPL, MSFT. The stock page needs a free Finnhub key.", 5],
+    ["stock_key", "secret", "Finnhub key", "From finnhub.io. Leave empty to keep the one the Buddy has."],
+    ["coins", "list", "Coins", "Up to 5 pairs, with commas: BTC-USD, ETH-EUR (prices from Coinbase).", 5],
+  ]],
+  ["Wi-Fi", [
+    ["wifi", "wifi", "Wi-Fi", "Leave both empty to keep the network the Buddy has. The password goes over the cable and is never shown again."],
+  ]],
+];
+let held = null;      // the settings as the Buddy holds them
+let edited = null;    // as the form has them
+let extras = {};      // what is not a plain setting: { wifi: {ssid, password} or null, has: {stock_key}, now: {ssid} }
+let board = null;     // { fw, older: [settings its firmware lacks] } when the settings came from a Buddy; null for the sample
+let lastBackup = null;   // { id, when }: what Undo puts back
+
+// The round as the firmware builds it: the pages of page_order first (once each), then the rest in the usual order.
+function roundOf(config) {
+  const seen = new Set(), out = [];
+  for (const name of [...(config.page_order || []), ...ROUND]) if (name in PAGES && !seen.has(name)) { seen.add(name); out.push(name); }
+  return out;
+}
+const pageOn = (name) => edited[PAGES[name][3]][name] !== false;
+// In the round: switched on, and with what it needs (the firmware leaves out a stock page without a key, a GitHub page without a name).
+const inRound = (name) => pageOn(name) && (name !== "stock" || Boolean(extras.has.stock_key || edited.stock_key)) && (name !== "github" || Boolean(edited.github_user));
+
+// ── the preview ───────────────────────────────────────────────────────────
+// A day's worth of what the laptop's helper sends, so the work pages have something to show (sample numbers).
+const SAMPLE_PC = { locked: false, mic: false, prs: 3, prs_failing: 0, reviews: 2, changes: 1, prs_merged: 2, prs_reviewed: 4, claude: 0, at: "",
+  pr_list: [{ t: "#4821 Fix the invoice export", s: 1, r: 2 }, { t: "#4790 Stock move rounding", s: 3, r: 0 }, { t: "#4702 Upgrade script for 19.0", s: 1, r: 1 }],
+  sessions: [], use: [34, 61], use_reset: ["13:10", "Sat"], in: "08:01", out: "", yin: "08:12", yout: "17:48" };
+const SAMPLE_ODOO = { h: 2.5, hb: 7.75, bw: 5, y: ["Fix the invoice export", "Review stock moves"], o: 7, r: 2, d: 0, a: 3,
+  t: [[48211, "Invoice export drops the tax line", "Code Review"], [48190, "Stock move rounding", "Code Review"], [47999, "Upgrade script for 19.0", "To Do"]], m: [] };
+const WARM_MS = 12000;   // the start screens, Wi-Fi and the first fetches: skipped, except when the start itself is the news
+// After a change of this setting the preview shows: a page, or the face with one of its status faces (the numbers of "demo").
+const SHOWS = { face: { page: "face" }, name: { page: "face", knock: true }, greeting: { page: "face", knock: true }, greeting_text: { page: "face", knock: true },
+  buddy_name: { start: true }, message: { demo: 24 }, birthday: { demo: 17 }, break_min: { demo: 19 }, water: { demo: 20 }, work: { demo: 21 },
+  weekend: { demo: 22 }, night: { demo: 1 }, clock_format: { page: "clock" }, temp_unit: { page: "weather" }, wind_unit: { page: "weather" },
+  lat: { page: "weather" }, tz_rule: { page: "clock" }, github_user: { page: "github" }, stocks: { page: "stock" }, stock_key: { page: "stock" },
+  coins: { page: "coin" }, theme: { keep: true }, mount: { keep: true }, brightness: { keep: true } };
+const preview = { sim: null, config: null, chain: Promise.resolve(), timer: null, last: 0, busy: false, failed: false, page: "face", showing: -1, said: -1, demoUntil: 0, feedAt: 0 };
+
+function script(src) {
+  return new Promise((resolve, reject) => { const node = el("script", { src }); node.onload = resolve; node.onerror = () => reject(new Error(src)); document.head.append(node); });
+}
+
+// What the simulated Buddy gets: the form's settings; the Finnhub key is never here, a stand-in says whether there is one.
+function previewConfig() {
+  const config = copy(edited);
+  config.stock_key = extras.has.stock_key || edited.stock_key ? "preview" : "";
+  return config;
+}
+
+// One thing at a time on the simulated Buddy; what is asked meanwhile waits its turn.
+function later(work) {
+  preview.chain = preview.chain.then(work).catch((error) => { preview.failed = true; $("stage-note").textContent = `The preview stopped (${error.message || error}). Your settings are fine; reload the page to bring it back.`; });
+  return preview.chain;
+}
+
+async function feed() {
+  const sim = preview.sim;
+  await sim.state(Object.assign({}, SAMPLE_PC, preview.demoUntil ? { demo: preview.demo } : {}));
+  await sim.odoo(SAMPLE_ODOO);
+  preview.feedAt = sim.trueMs;
+}
+
+// The page's name under the preview, and its chip.
+function label(app) {
+  preview.showing = app;
+  const name = BY_ID[app];
+  $("stage-page").textContent = name ? PAGES[name][1] : app === 15 ? "Yesterday" : "";
+  for (const chip of $("strip").children) chip.setAttribute("aria-pressed", String(chip.dataset.page === name));
+}
+
+async function showPage(name) {
+  preview.page = name;
+  await preview.sim.showPage(PAGES[name][0]);
+  label(PAGES[name][0]);
+}
+
+// After a start or a restart: skip the start screens (or watch them), give it the day's data, turn to what was changed.
+async function settle(shows) {
+  const sim = preview.sim;
+  preview.demoUntil = 0;
+  if (shows.start) { await sim.run(300); preview.settleAt = performance.now() + 9000; return; }   // watch it start; the data follows
+  await sim.run(WARM_MS);
+  if (shows.demo) { preview.demo = shows.demo; preview.demoUntil = performance.now() + 7000; }
+  await feed();
+  const page = shows.page || (shows.demo || shows.knock ? "face" : preview.page);
+  await showPage(pageOn(page) || shows.page ? page : "face");
+  if (shows.knock) await sim.doubleKnock();
+  await sim.run(300);
+}
+
+async function startPreview() {
+  if (preview.failed) return;
+  $("stage-note").textContent = "Starting the preview…";
+  if (!window.BuddySim) {
+    await script("sim/mbsim.js");
+    await script("sim/buddy-sim.js");
+    preview.wasm = await (await fetch("sim/mbsim.wasm")).arrayBuffer();
+  }
+  const sim = new BuddySim(MBSim, preview.wasm);
+  sim.internet.anySymbol = true;                    // every symbol and pair has (sample) numbers
+  sim.internet.today = new Date();
+  sim.clock = () => Date.now() - WARM_MS;           // the skipped start lands on now
+  preview.config = previewConfig();
+  await sim.boot({ config: preview.config, whenMs: sim.clock() });
+  preview.sim = sim;
+  await settle({ page: preview.page });
+  draw();
+  $("stage-note").textContent = "";
+  preview.last = performance.now();
+  preview.wall = Date.now();
+  if (!preview.timer) preview.timer = setInterval(tick, 33);
+}
+
+// The form changed: send the simulated Buddy what differs, as Apply would over the cable; it restarts, as the real one does.
+function refresh(key) {
+  noteChanges();
+  if (key === "github_user" || key === "stock_key" || key === "discard") drawStrip();
+  if (!preview.sim && !preview.starting) return;
+  clearTimeout(preview.soon);
+  preview.soon = setTimeout(() => later(async () => {
+    if (!preview.sim) return;
+    const want = previewConfig(), patch = {};
+    for (const name of Object.keys(want)) if (JSON.stringify(want[name]) !== JSON.stringify(preview.config[name])) patch[name] = want[name];
+    if (!Object.keys(patch).length) return;
+    const answer = await preview.sim.set(patch);
+    if (!answer || !answer.ok) {   // the firmware's own check, before Apply: mark the fields
+      marks(answer && answer.errors ? answer.errors : {});
+      return;
+    }
+    marks({});
+    preview.config = want;
+    await settle(SHOWS[key] || (key in PAGES ? { page: key } : { keep: true }));
+    draw();
+    preview.last = performance.now();
+  }), 180);
+}
+
+function draw() {
+  const sim = preview.sim;
+  if (!sim || !sim.module) return;
+  const frame = sim.frame(), canvas = $("screen");
+  if (canvas.width !== frame.w || canvas.height !== frame.h) { canvas.width = frame.w; canvas.height = frame.h; }
+  canvas.getContext("2d").putImageData(new ImageData(frame.rgba, frame.w, frame.h), 0, 0);
+  const app = Number(sim.statusLine().app);   // the Buddy's own word, once a second: it follows swipes and the round
+  if (app !== preview.said) { preview.said = app; label(app); }
+}
+
+// The simulated Buddy lives at the speed of the clock on the wall.
+function tick() {
+  if (preview.busy || preview.failed || !preview.sim || $("yours").hidden || document.hidden) { preview.last = performance.now(); return; }
+  preview.busy = true;
+  if (preview.wall && Date.now() - preview.wall > 30000) {   // the tab was away: start again on the time it is now
+    preview.wall = 0;
+    later(async () => { try { preview.sim = null; await startPreview(); } finally { preview.busy = false; } });
+    return;
+  }
+  later(async () => {
+    const now = performance.now(), sim = preview.sim;
+    try {
+      if (!sim.module) return;
+      await sim.run(Math.min(250, Math.max(1, now - preview.last)));
+      preview.last = now;
+      preview.wall = Date.now();
+      if (preview.settleAt && now > preview.settleAt) { preview.settleAt = 0; await feed(); }
+      if (preview.demoUntil && now > preview.demoUntil) { preview.demoUntil = 0; await feed(); }
+      else if (sim.trueMs - preview.feedAt > 45000 && !preview.settleAt) await feed();   // the helper's minute
+      draw();
+      const light = sim.board().backlight;
+      $("screen").style.filter = light >= 250 ? "" : `brightness(${(0.45 + 0.55 * light / 255).toFixed(2)})`;
+    } finally { preview.busy = false; }
+  });
+}
+
+// A finger on the preview: a tap or a swipe goes to the simulated touch screen as it is.
+function wireScreen() {
+  const canvas = $("screen");
+  const at = (event) => { const box = canvas.getBoundingClientRect(); return [(event.clientX - box.left) * canvas.width / box.width, (event.clientY - box.top) * canvas.height / box.height]; };
+  let down = false;
+  const touch = (event) => { if (preview.sim && preview.sim.module) { const [x, y] = at(event); preview.sim.touch(Math.max(0, Math.min(canvas.width - 1, x)), Math.max(0, Math.min(canvas.height - 1, y))); } };
+  canvas.addEventListener("pointerdown", (event) => { down = true; canvas.setPointerCapture(event.pointerId); later(async () => touch(event)); });
+  canvas.addEventListener("pointermove", (event) => { if (down) later(async () => touch(event)); });
+  const up = () => { if (down) { down = false; later(async () => { if (preview.sim && preview.sim.module) preview.sim.release(); }); } };
+  canvas.addEventListener("pointerup", up);
+  canvas.addEventListener("pointercancel", up);
+  $("stage-prev").addEventListener("click", () => later(async () => { if (preview.sim) await preview.sim.swipeRight(); }));
+  $("stage-next").addEventListener("click", () => later(async () => { if (preview.sim) await preview.sim.swipeLeft(); }));
+  $("stage-knock").addEventListener("click", () => later(async () => { if (preview.sim) { await showPage("face"); await preview.sim.doubleKnock(); } }));
+}
+
+function drawStrip() {
+  $("strip").replaceChildren(...roundOf(edited).filter(inRound).map((name) => {
+    const chip = el("button", { type: "button", className: "chip", textContent: PAGES[name][1] });
+    chip.dataset.page = name;
+    chip.setAttribute("aria-pressed", String(BY_ID[preview.showing] === name));
+    chip.addEventListener("click", () => later(async () => { if (preview.sim) await showPage(name); }));
+    return chip;
+  }));
+}
+
+// ── the form ──────────────────────────────────────────────────────────────
+function select(options, value, set) {
+  const node = el("select");
+  for (const [v, text] of options) node.append(el("option", { value: String(v), textContent: text }));
+  node.value = String(value);
+  node.addEventListener("change", () => set(typeof options[0][0] === "number" ? Number(node.value) : node.value));
+  return node;
+}
+
+function choices(key, options, cls) {
+  const box = el("div", { className: `choices ${cls || ""}` });
+  const values = options.some(([v]) => v === edited[key]) ? options : [...options, [edited[key], String(edited[key])]];
+  for (const [v, text] of values) {
+    const input = el("input", { type: "radio", name: key, checked: v === edited[key] });
+    input.addEventListener("change", () => { edited[key] = v; refresh(key); });
+    box.append(el("label", {}, cls ? el("img", { src: `img/face-${v}.png`, alt: "" }) : null, el("span", {}, input, ` ${text}`)));
+  }
+  return box;
+}
+
+// The round: one row a page, in the order the Buddy shows them. Drag a row, or use its arrows.
+function roundList() {
+  const list = el("ol", { className: "round", id: "round" });
+  const rows = () => {
+    const order = roundOf(edited);
+    list.replaceChildren(...order.map((name, index) => {
+      const [, label, what, group] = PAGES[name];
+      const on = el("input", { type: "checkbox", checked: pageOn(name), ariaLabel: `Show ${label}` });
+      on.addEventListener("change", () => { edited[group][name] = on.checked; row.classList.toggle("off", !on.checked); drawStrip(); refresh(name); });
+      const move = (to) => {
+        const next = order.filter((other) => other !== name);
+        next.splice(to, 0, name);
+        edited.page_order = next.join() === ROUND.join() ? [] : next;   // the usual order needs no list
+        rows();
+        drawStrip();
+        refresh(name);
+      };
+      const arrow = (text, to, title) => { const b = el("button", { type: "button", className: "plain small", textContent: text, title, ariaLabel: `${title}: ${label}`, disabled: to < 0 || to >= order.length }); b.addEventListener("click", () => move(to)); return b; };
+      const see = el("button", { type: "button", className: "plain small", textContent: "Show" });
+      see.addEventListener("click", () => later(async () => { if (preview.sim) await showPage(name); }));
+      const row = el("li", { className: on.checked ? "" : "off", draggable: true },
+        el("span", { className: "grip", textContent: "⠿", title: "Drag to move" }), on,
+        el("span", { className: "what" }, el("b", { textContent: label }), el("small", { textContent: what })),
+        arrow("↑", index - 1, "Earlier"), arrow("↓", index + 1, "Later"), see);
+      row.dataset.page = name;
+      row.addEventListener("dragstart", (event) => { event.dataTransfer.setData("text/plain", name); event.dataTransfer.effectAllowed = "move"; row.classList.add("dragging"); });
+      row.addEventListener("dragend", () => row.classList.remove("dragging"));
+      row.addEventListener("dragover", (event) => { event.preventDefault(); row.classList.add("over"); });
+      row.addEventListener("dragleave", () => row.classList.remove("over"));
+      row.addEventListener("drop", (event) => {
+        event.preventDefault();
+        row.classList.remove("over");
+        const moved = event.dataTransfer.getData("text/plain");
+        if (!(moved in PAGES) || moved === name) return;
+        const next = order.filter((other) => other !== moved);
+        next.splice(next.indexOf(name) + (order.indexOf(moved) < index ? 1 : 0), 0, moved);
+        edited.page_order = next.join() === ROUND.join() ? [] : next;
+        rows();
+        drawStrip();
+        refresh(moved);
+      });
+      return row;
+    }));
+  };
+  rows();
+  const box = el("div", {}, list);
+  if (board && board.older.length) {
+    box.append(el("small", { className: "bad", textContent: `This Buddy's firmware (${board.fw || "older"}) keeps the usual order and cannot switch the lower seven pages off yet. `
+      + "The preview shows how it will look; Apply needs the Buddy updated from the installer page first. The first eight pages can be switched now." }));
+  }
+  return box;
+}
+
+function control(key, kind, extra) {
+  if (kind === "round") return roundList();
+  if (kind === "text") {
+    const input = el("input", { type: "text", maxLength: extra, value: edited[key], autocomplete: "off" });
+    input.addEventListener("input", () => { edited[key] = input.value.trim(); refresh(key); });
+    return input;
+  }
+  if (kind === "choice") return choices(key, extra);
+  if (kind === "faces") return choices(key, extra, "faces");
+  if (kind === "bool") {
+    const input = el("input", { type: "checkbox", checked: edited[key] === true });
+    input.addEventListener("change", () => { edited[key] = input.checked; refresh(key); });
+    return el("label", { className: "tick" }, input, el("span", { textContent: "On" }));
+  }
+  if (kind === "birthday") {
+    const [m, d] = /^\d\d-\d\d$/.test(edited[key]) ? edited[key].split("-").map(Number) : [0, 1];
+    const month = select([[0, "Not set"], ...MONTHS.map((name, i) => [i + 1, name])], m, () => fill(true));
+    const day = el("select");
+    const fill = (byHand) => {
+      const count = DAYS_IN[(Number(month.value) || 1) - 1], keep = Number(day.value) || d;
+      day.replaceChildren(...Array.from({ length: count }, (_, i) => el("option", { value: String(i + 1), textContent: String(i + 1) })));
+      day.value = String(Math.min(keep, count));
+      day.disabled = month.value === "0";
+      edited[key] = month.value === "0" ? "" : `${month.value.padStart(2, "0")}-${day.value.padStart(2, "0")}`;
+      if (byHand) refresh(key);
+    };
+    day.addEventListener("change", () => fill(true));
+    fill(false);
+    return el("div", { className: "row" }, month, day);
+  }
+  if (kind === "work") {
+    const part = (name, label, from, to) => el("label", {}, label, select(hours(from, to), edited.work[name], (v) => { edited.work[name] = v; refresh(key); }));
+    return el("div", { className: "row" }, part("start", "Starts", 0, 23), part("end", "Ends", 1, 24), part("lunch", "Lunch", 0, 23));
+  }
+  if (kind === "night") {
+    const on = el("input", { type: "checkbox", checked: edited.night.enabled === true });
+    on.addEventListener("change", () => { edited.night.enabled = on.checked; refresh(key); });
+    const part = (name, label) => el("label", {}, label, select(hours(0, 23), edited.night[name], (v) => { edited.night[name] = v; refresh(key); }));
+    const dim = el("input", { type: "range", min: "3", max: "100", value: String(Math.round(edited.night.brightness / 255 * 100)) });
+    dim.addEventListener("input", () => { edited.night.brightness = Math.max(8, Math.round(Number(dim.value) * 255 / 100)); refresh(key); });
+    return el("div", {}, el("label", { className: "tick" }, on, el("span", { textContent: "On" })), el("div", { className: "row" }, part("start", "From"), part("end", "Until"), el("label", {}, "Brightness at night", dim)));
+  }
+  if (kind === "level") {   // 8-255 on the Buddy, percent here
+    const range = el("input", { type: "range", min: "3", max: "100", value: String(Math.round(edited[key] / 255 * 100)) });
+    const shown = el("span", { textContent: ` ${range.value}%` });
+    range.addEventListener("input", () => { edited[key] = Math.max(8, Math.round(Number(range.value) * 255 / 100)); shown.textContent = ` ${range.value}%`; refresh(key); });
+    return el("div", {}, range, shown);
+  }
+  if (kind === "wifi") {
+    const name = el("input", { type: "text", maxLength: 32, placeholder: extras.now.ssid ? `Now: ${extras.now.ssid}` : "Network name", autocomplete: "off", value: extras.wifi ? extras.wifi.ssid : "" });
+    const pass = el("input", { type: "password", maxLength: 63, placeholder: "Password", autocomplete: "new-password", className: "text", value: extras.wifi ? extras.wifi.password : "" });
+    const sync = () => { extras.wifi = name.value ? { ssid: name.value, password: pass.value } : null; noteChanges(); };
+    name.addEventListener("input", sync);
+    pass.addEventListener("input", sync);
+    return el("div", { className: "row" }, name, pass);
+  }
+  if (kind === "city") {
+    const now = el("small", { textContent: `Now: ${edited.tz_name}, ${edited.lat}, ${edited.lon}` });
+    const query = el("input", { type: "text", maxLength: 60, placeholder: "Lisbon", autocomplete: "off" });
+    const go = el("button", { type: "button", className: "plain", textContent: "Search" });
+    const found = el("div", { className: "choices" });
+    const search = async () => {
+      go.disabled = true;
+      found.replaceChildren(el("small", { textContent: "Searching…" }));
+      let answer;
+      try { answer = await api(`/api/city?q=${encodeURIComponent(query.value)}`); } catch { return expired(); }
+      go.disabled = false;
+      if (!answer.ok) return found.replaceChildren(el("small", { className: "bad", textContent: answer.error }));
+      if (!answer.places.length) return found.replaceChildren(el("small", { textContent: "No place with that name. Try the nearest bigger town." }));
+      found.replaceChildren(...answer.places.map((place) => {
+        const pick = el("button", { type: "button", className: "plain", textContent: place.label });
+        pick.addEventListener("click", () => {
+          for (const part of ["lat", "lon", "tz_name", "tz_rule"]) edited[part] = place[part];
+          now.textContent = `Chosen: ${place.label} (${place.tz_name})`;
+          found.replaceChildren();
+          refresh("tz_rule");
+        });
+        return pick;
+      }));
+    };
+    go.addEventListener("click", search);
+    query.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); search(); } });
+    return el("div", {}, el("div", { className: "say" }, query, go), found, now);
+  }
+  if (kind === "list") {   // stocks: [{symbol, on}], coins: [{pair, source, on}]
+    const part = key === "stocks" ? "symbol" : "pair";
+    const input = el("input", { type: "text", value: edited[key].map((entry) => entry[part]).join(", "), autocomplete: "off" });
+    input.addEventListener("input", () => {
+      const names = input.value.toUpperCase().split(",").map((name) => name.trim()).filter(Boolean).slice(0, extra);
+      if (!names.length) return;   // the Buddy keeps at least one
+      edited[key] = names.map((name) => {
+        const before = held[key].find((entry) => entry[part] === name);
+        return key === "stocks" ? { symbol: name, on: true } : { pair: name, source: before ? before.source : "coinbase", on: true };
+      });
+      refresh(key);
+    });
+    return input;
+  }
+  if (kind === "secret") {
+    const input = el("input", { type: "password", maxLength: 64, placeholder: extras.has[key] ? "A key is set" : "No key yet", autocomplete: "new-password", className: "text", value: edited[key] || "" });
+    input.addEventListener("input", () => { if (input.value) edited[key] = input.value.trim(); else delete edited[key]; refresh(key); });
+    return input;
+  }
+  return null;
+}
+
+// Which stored settings a field stands for, to know whether this Buddy has it and where its errors go.
+const PARTS = { wifi: [], city: ["lat", "lon", "tz_name", "tz_rule"], stock_key: ["stocks"], round: ["pages", "more_pages", "page_order"] };
+
+function drawSettings() {
+  const cards = [];
+  for (const [title, fields] of GROUPS) {
+    const card = el("div", { className: "card" }, el("h2", { textContent: title }));
+    let any = false;
+    for (const [key, kind, label, hint, extra] of fields) {
+      const parts = PARTS[key] || [key];
+      if (!parts.every((part) => part in held)) continue;   // a firmware without this setting
+      if (key === "wifi" && !board) continue;               // the sample has no network to change
+      any = true;
+      const field = el("div", { className: "field" }, el("div", { className: "legend", textContent: label }), control(key, kind, extra),
+        hint ? el("small", { textContent: hint }) : null, el("small", { className: "bad refused", hidden: true }));
+      field.dataset.keys = (key === "stock_key" || key === "wifi" ? [key] : parts).join(" ");
+      card.append(field);
+    }
+    if (any) cards.push(card);
+  }
+  $("yours-fields").replaceChildren(...cards);
+  drawStrip();
+}
+
+// Puts what the Buddy (or its preview) refused under the fields it names; an empty set clears the notes.
+function marks(errors) {
+  for (const field of $("yours-fields").querySelectorAll(".field")) {
+    const names = field.dataset.keys.split(" ");
+    const wrong = Object.keys(errors).filter((k) => names.some((n) => k === n || k.startsWith(`${n}.`) || k.startsWith(`${n}[`))).map((k) => errors[k]).join("; ");
+    const note = field.querySelector("small.refused");
+    note.hidden = !wrong;
+    note.textContent = wrong ? `The Buddy does not take this: ${wrong}` : "";
+  }
+}
+
+function changed() {
+  const patch = {};
+  for (const key of Object.keys(edited)) if (JSON.stringify(edited[key]) !== JSON.stringify(held[key])) patch[key] = edited[key];
+  return patch;
+}
+
+function noteChanges() {
+  if (!edited) return;
+  const count = Object.keys(changed()).length + (extras.wifi ? 1 : 0);
+  $("yours-save").disabled = !board || count === 0;
+  $("yours-discard").disabled = count === 0;
+  $("yours-undo").disabled = !board || !lastBackup;
+  $("yours-undo").title = lastBackup ? `Back to what the Buddy held on ${lastBackup.when}` : "";
+  $("yours-pending").textContent = !board ? "A sample Buddy: look around; nothing can be applied."
+    : count === 0 ? "The Buddy has what you see." : `${count} change${count === 1 ? "" : "s"} not on the Buddy yet.`;
+}
+
+// Takes a set of settings (from the Buddy, or the sample) into the form and the preview.
+function take(config, from) {
+  board = from;
+  held = Object.assign(copy(NEWER), config);
+  if (board) board.older = Object.keys(NEWER).filter((key) => !(key in config));
+  edited = copy(held);
+  drawSettings();
+  marks({});
+  $("yours-load").hidden = true;
+  $("yours-form").hidden = false;
+  $("yours-source").textContent = board ? `Read from your Buddy over the cable${board.fw ? ` (firmware ${board.fw})` : ""}.` : "No Buddy connected: this is a sample.";
+  noteChanges();
+  preview.starting = true;
+  later(startPreview);
+}
+
+async function readSettings() {
+  $("yours-read").disabled = true;
+  $("yours-error").textContent = "";
+  let answer;
+  try { answer = await api("/api/settings"); } catch { return expired(); }
+  $("yours-read").disabled = false;
+  if (!answer.ok) { $("yours-error").textContent = answer.error; $("yours-sample").hidden = false; return; }
+  extras = { wifi: null, has: answer.has || {}, now: answer.wifi || {} };
+  lastBackup = (answer.backups || [])[0] || null;
+  take(answer.config, { fw: answer.fw || "", older: [] });
+  $("yours-result").textContent = "";
+}
+$("yours-read").addEventListener("click", readSettings);
+$("yours-sample").addEventListener("click", () => { extras = { wifi: null, has: {}, now: {} }; lastBackup = null; take(copy(SAMPLE), null); });
+
+$("yours-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const patch = changed();
+  $("yours-result").className = "muted";
+  if (!Object.keys(patch).length && !extras.wifi) { $("yours-result").textContent = "Nothing was changed."; return; }
+  if (extras.wifi && extras.wifi.password && extras.wifi.password.length < 8) { $("yours-result").className = "error"; $("yours-result").textContent = "A Wi-Fi password has at least 8 characters (leave it empty for an open network)."; return; }
+  $("yours-save").disabled = true;
+  $("yours-result").textContent = "Applying… the Buddy restarts.";
+  let answer;
+  try { answer = await api("/api/settings", { config: patch, wifi: extras.wifi }); } catch { return expired(); }
+  if (!answer.ok) {
+    $("yours-result").className = "error";
+    $("yours-result").textContent = answer.error;
+    if (answer.errors) marks(answer.errors);
+    noteChanges();
+    return;
+  }
+  if (edited.stock_key) extras.has.stock_key = true;
+  delete edited.stock_key;
+  if (extras.wifi) { extras.now = { ssid: extras.wifi.ssid }; extras.wifi = null; }
+  held = copy(edited);
+  lastBackup = (answer.backups || [])[0] || lastBackup;
+  $("yours-result").className = "";
+  $("yours-result").textContent = "Applied. The Buddy has restarted with these settings.";
+  noteChanges();
+});
+
+// An earlier set of settings back on the Buddy, and into the form and the preview.
+async function restore(id) {
+  $("yours-result").className = "muted";
+  $("yours-result").textContent = "Putting the earlier settings back… the Buddy restarts.";
+  $("yours-undo").disabled = true;
+  let answer;
+  try { answer = await api("/api/restore", { id }); } catch { return expired(); }
+  if (!answer.ok) { $("yours-result").className = "error"; $("yours-result").textContent = answer.error; noteChanges(); return; }
+  lastBackup = (answer.backups || [])[0] || lastBackup;
+  const from = board;
+  preview.sim = null;
+  take(answer.config, from);
+  $("yours-result").className = "";
+  $("yours-result").textContent = answer.same ? "The Buddy already holds those settings." : "Done. The Buddy is back on its earlier settings.";
+}
+$("yours-undo").addEventListener("click", () => { if (lastBackup) restore(lastBackup.id); });
+$("yours-discard").addEventListener("click", () => {
+  edited = copy(held);
+  extras.wifi = null;
+  drawSettings();
+  marks({});
+  refresh("discard");
+  $("yours-result").textContent = "";
+});
+$("yours-earlier").addEventListener("toggle", async () => {
+  if (!$("yours-earlier").open) return;
+  let answer;
+  try { answer = await api("/api/backups"); } catch { return expired(); }
+  const rows = (answer.backups || []).map((backup) => {
+    const back = el("button", { type: "button", className: "plain small", textContent: "Put back", disabled: !board });
+    back.addEventListener("click", () => restore(backup.id));
+    return el("li", {}, el("span", { textContent: backup.when }), back);
+  });
+  $("yours-backups").replaceChildren(...(rows.length ? rows : [el("li", { className: "muted", textContent: "None yet. What the Buddy holds is kept here before every Apply." })]));
+});
+wireScreen();
+
+function show(tab) {
+  for (const name of ["setup", "yours", "say"]) {
+    $(name).hidden = name !== tab;
+    $(`tab-${name}`).setAttribute("aria-selected", String(name === tab));
+  }
+  document.body.classList.toggle("wide", tab === "yours");
+  if (tab === "say") $("say-text").focus();
+  if (tab === "yours" && !held && !$("yours-read").disabled) readSettings();   // straight to the Buddy's settings
+}
+$("tab-setup").addEventListener("click", () => show("setup"));
+$("tab-say").addEventListener("click", () => show("say"));
+$("tab-yours").addEventListener("click", () => show("yours"));
+
+$("demo").hidden = !hash.has("demo");
+show(["say", "yours"].includes(hash.get("tab")) ? hash.get("tab") : "setup");
+loadStatus();
+setInterval(() => { if (!closed) api("/api/ping").catch(expired); }, 20000);   // the app stops a few minutes after the page closes
+</script>
+</body>
+</html>

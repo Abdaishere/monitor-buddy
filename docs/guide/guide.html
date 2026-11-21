@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Monitor Buddy: what it does</title>
+<style>
+@page { size: A4; margin: 14mm 14mm 16mm; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font: 10.5pt/1.5 "Inter", "Noto Sans", "DejaVu Sans", sans-serif; color: #241a22; }
+h1 { font-size: 34pt; line-height: 1.05; margin: 0 0 6pt; letter-spacing: -0.5pt; }
+h2 { font-size: 19pt; margin: 0 0 4pt; color: #714B67; letter-spacing: -0.2pt; }
+h3 { font-size: 11.5pt; margin: 14pt 0 4pt; }
+p { margin: 0 0 7pt; }
+.lede { font-size: 12pt; color: #55464f; max-width: 150mm; }
+.muted { color: #6f6069; }
+.small { font-size: 9pt; }
+section { break-before: page; }
+section.first { break-before: auto; }
+.shot { display: block; width: 100%; image-rendering: pixelated; border-radius: 5px; border: 3px solid #17111a; background: #000; }
+.card { break-inside: avoid; }
+.card b { display: block; font-size: 10pt; margin-top: 4pt; }
+.card span { display: block; font-size: 8.8pt; line-height: 1.35; color: #6f6069; }
+.grid { display: grid; gap: 9pt 10pt; }
+.g2 { grid-template-columns: repeat(2, 1fr); }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+.row { display: grid; grid-template-columns: 30mm 1fr; gap: 10pt; align-items: center; padding: 2.5pt 0; border-top: 1px solid #e6dde3; break-inside: avoid; }
+.row:first-of-type { border-top: none; }
+.row h3 { margin: 0 0 2pt; }
+.row p { margin: 0; font-size: 9.6pt; }
+.num { display: inline-block; min-width: 15pt; height: 15pt; line-height: 15pt; text-align: center; border-radius: 8pt; background: #714B67; color: #fff; font-size: 8.5pt; font-weight: 700; margin-right: 5pt; }
+.strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5pt; align-items: center; margin: 4pt 0 2pt; }
+.strip.s3 { grid-template-columns: repeat(3, 1fr); }
+.anim { break-inside: avoid; margin-bottom: 10pt; }
+.anim h3 { margin: 0 0 1pt; }
+.anim p { font-size: 9.4pt; margin: 0 0 3pt; color: #55464f; }
+.tag { display: inline-block; font-size: 8pt; font-weight: 700; letter-spacing: 0.4pt; text-transform: uppercase; color: #017E84; }
+table { width: 100%; border-collapse: collapse; font-size: 9.3pt; }
+th { text-align: left; font-size: 8.4pt; letter-spacing: 0.4pt; text-transform: uppercase; color: #6f6069; padding: 4pt 6pt 4pt 0; border-bottom: 1.5px solid #714B67; }
+td { padding: 2.8pt 8pt 2.8pt 0; border-bottom: 1px solid #e6dde3; vertical-align: top; }
+code { font: 8.8pt "JetBrains Mono", "DejaVu Sans Mono", monospace; background: #f4eef2; padding: 0.5pt 3pt; border-radius: 3px; }
+.cover { height: 262mm; display: flex; flex-direction: column; justify-content: space-between; }
+.cover .band { background: #714B67; color: #fff; border-radius: 10px; padding: 18mm 14mm 14mm; }
+.cover .band p { color: #eadfe6; font-size: 12.5pt; max-width: 135mm; margin: 0; }
+.cover .hero { width: 150mm; margin: 0 auto; }
+.facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8pt; }
+.facts div { border-top: 2px solid #017E84; padding-top: 5pt; font-size: 9pt; color: #55464f; }
+.facts b { display: block; font-size: 13pt; color: #241a22; }
+.note { background: #f4eef2; border-radius: 6px; padding: 8pt 10pt; font-size: 9.6pt; break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<section class="first cover">
+  <div class="band">
+    <h1>Monitor Buddy</h1>
+    <p>A small screen on your desk that shows a face, follows the working day, and keeps Odoo, GitHub and Claude Code in view. This guide shows everything in firmware 1.0.0.</p>
+  </div>
+  <img class="shot hero" src="shots/status_lockedin_0.png" alt="The Buddy's focused face with the caption LOCKED IN">
+  <div>
+    <p class="small muted" style="text-align:center; margin-bottom: 14pt">Every picture in this guide is a screenshot read from the board's own screen memory, at its real 320×172 pixels.</p>
+    <div class="facts">
+      <div><b>320×172</b>1.47" colour touchscreen</div>
+      <div><b>ESP32-C6</b>Waveshare Touch LCD board, Wi-Fi</div>
+      <div><b>30+ faces</b>9 tap moods, over 20 status faces</div>
+      <div><b>15 pages</b>face, clock, date, weather, moon, stocks, coins, GitHub, Odoo, Claude, today, PRs, animations, a game, AbdA</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>The face follows the day</h2>
+  <p class="lede">The first page is a pair of eyes. The Buddy picks its face from what is going on, and writes the reason under the eyes. When several things are true, the one higher in this list wins.</p>
+
+  <div class="row"><img class="shot" src="shots/day_dizzy_0.png" alt=""><div><h3><span class="num">1</span>A shake</h3><p>Shake the Buddy and it goes dizzy. When you stop it gives you a look, then shows the Today page.</p></div></div>
+  <div class="row"><img class="shot" src="shots/status_night_0.png" alt=""><div><h3><span class="num">2</span>Night</h3><p>In the night hours you set (night mode is off until you switch it on) the eyes go heavy and the screen dims. A tap brings normal brightness back for 30 seconds.</p></div></div>
+  <div class="row"><img class="shot" src="shots/day_onair.png" alt=""><div><h3><span class="num">3</span>On air</h3><p>A program on the laptop uses the microphone. The time is how long it has been on.</p></div></div>
+  <div class="row"><img class="shot" src="shots/day_meeting_name.png" alt=""><div><h3><span class="num">4</span>A meeting soon</h3><p>From 5 minutes before a meeting in your Odoo or Google calendar. The caption takes turns with the meeting's name.</p></div></div>
+  <div class="row"><img class="shot" src="shots/day_timer.png" alt=""><div><h3><span class="num">5</span>Timer</h3><p>Lay the Buddy flat for 2 seconds and a timer counts up. Stand it up and it shows how long you focused. While it runs, the laptop's notifications are off and its screen stays awake.</p></div></div>
+  <div class="row"><img class="shot" src="shots/status_lunch_0.png" alt=""><div><h3><span class="num">6</span>Computer locked</h3><p>Between 12:00 and 14:00 it is on LUNCH BREAK, chewing. At any other time it shows AWAY and dozes. While the computer is locked it stays on the face and stops flipping pages.</p></div></div>
+  <div class="row"><img class="shot" src="shots/status_claude_needs_0.png" alt=""><div><h3><span class="num">7</span>Claude needs you</h3><p>A Claude Code session is waiting for an approval or has asked a question. The caption takes turns with the project's name until it is answered.</p></div></div>
+  <div class="row"><img class="shot" src="shots/day_nudge_1.png" alt=""><div><h3><span class="num">8</span>Log your hours</h3><p>On a weekday, while the working day before has fewer than 4 hours on your Odoo timesheet. The caption names that day.</p></div></div>
+  <div class="row"><img class="shot" src="shots/status_ci_1.png" alt=""><div><h3><span class="num">9</span>CI red</h3><p>An open pull request updated in the last 4 days has failed checks. The number is how many.</p></div></div>
+  <div class="row"><img class="shot" src="shots/status_claude_done_0.png" alt=""><div><h3><span class="num">10</span>Claude done</h3><p>A Claude Code session just finished. Shown for 90 seconds.</p></div></div>
+  <div class="row"><img class="shot" src="shots/status_lockedin_2.png" alt=""><div><h3><span class="num">11</span>Locked in</h3><p>At least one of your Odoo tasks is in a Development stage.</p></div></div>
+</section>
+
+<section>
+  <h2>The faces move</h2>
+  <p class="lede">Paper can't play an animation, so each strip below is a run of screenshots taken a fraction of a second apart. All faces also blink, and the eyes follow the board when it is tilted.</p>
+
+  <div class="anim"><h3>Lunch break</h3><p>Two drawn frames swap about four times a second: the mouth squashes and the crumbs drop, like chewing.</p>
+    <div class="strip"><img class="shot" src="shots/status_lunch_0.png" alt=""><img class="shot" src="shots/status_lunch_1.png" alt=""><img class="shot" src="shots/status_lunch_2.png" alt=""><img class="shot" src="shots/status_lunch_3.png" alt=""></div></div>
+  <div class="anim"><h3>Away</h3><p>Closed eyes rise and fall like breathing while two "z" drift up and away.</p>
+    <div class="strip"><img class="shot" src="shots/status_away_0.png" alt=""><img class="shot" src="shots/status_away_1.png" alt=""><img class="shot" src="shots/status_away_2.png" alt=""></div></div>
+  <div class="anim"><h3>A shake</h3><p>Spirals turn in the eyes and three stars circle overhead for as long as the Buddy is shaken. Then a flat stare, with a slow shake of the head.</p>
+    <div class="strip"><img class="shot" src="shots/day_dizzy_0.png" alt=""><img class="shot" src="shots/day_dizzy_1.png" alt=""><img class="shot" src="shots/day_really.png" alt=""></div></div>
+  <div class="anim"><h3>Log your hours</h3><p>The pupils tremble and a blue tear runs down the side of the eye.</p>
+    <div class="strip"><img class="shot" src="shots/day_nudge_0.png" alt=""><img class="shot" src="shots/day_nudge_1.png" alt=""><img class="shot" src="shots/day_nudge_2.png" alt=""></div></div>
+  <div class="anim"><h3>CI red</h3><p>Red eyes shake from side to side and a "!" flashes between them.</p>
+    <div class="strip"><img class="shot" src="shots/status_ci_0.png" alt=""><img class="shot" src="shots/status_ci_1.png" alt=""><img class="shot" src="shots/status_ci_2.png" alt=""></div></div>
+  <div class="anim"><h3>Locked in</h3><p>The pupils sweep left to right and snap back, like reading lines of code. A teal cursor blinks after the caption.</p>
+    <div class="strip"><img class="shot" src="shots/status_lockedin_0.png" alt=""><img class="shot" src="shots/status_lockedin_1.png" alt=""><img class="shot" src="shots/status_lockedin_2.png" alt=""></div></div>
+</section>
+
+<section>
+  <h2>Nine moods on tap</h2>
+  <p class="lede">Tap the face and it steps to the next mood. It keeps that mood until the day's status changes. Spin the board quickly and it jumps to Surprised.</p>
+  <div class="grid g3">
+    <div class="card"><img class="shot" src="shots/mood_0_normal.png" alt=""><b>Normal</b></div>
+    <div class="card"><img class="shot" src="shots/mood_1_happy.png" alt=""><b>Happy</b></div>
+    <div class="card"><img class="shot" src="shots/mood_2_surprised.png" alt=""><b>Surprised</b></div>
+    <div class="card"><img class="shot" src="shots/mood_3_sleepy.png" alt=""><b>Sleepy</b></div>
+    <div class="card"><img class="shot" src="shots/mood_4_angry.png" alt=""><b>Angry</b></div>
+    <div class="card"><img class="shot" src="shots/mood_5_sad.png" alt=""><b>Sad</b></div>
+    <div class="card"><img class="shot" src="shots/mood_6_excited.png" alt=""><b>Excited</b></div>
+    <div class="card"><img class="shot" src="shots/mood_7_love.png" alt=""><b>Love</b></div>
+    <div class="card"><img class="shot" src="shots/mood_8_suspicious.png" alt=""><b>Suspicious</b></div>
+  </div>
+  <h3>Captions that answer you</h3>
+  <div class="grid g3">
+    <div class="card"><img class="shot" src="shots/day_timer_done.png" alt=""><b>Focused</b><span>How long the timer ran, shown for 15 seconds.</span></div>
+    <div class="card"><img class="shot" src="shots/day_join.png" alt=""><b>Opening the link</b><span>For 4 seconds after a tap on MEETING IN n MIN, while the laptop opens the meeting in the browser.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Work pages</h2>
+  <p class="lede">While the computer is unlocked, the Buddy moves to the next page every 8 seconds. These are the ones built for work.</p>
+  <div class="grid g2">
+    <div class="card"><img class="shot" src="shots/page_odoo.png" alt="Odoo page"><b>Odoo</b><span>Your initials and the time on a slim top line. The ring is today's timesheet against an 8-hour day. Then your open tasks, how many are in code review, and one of your recently changed tasks with its stage. Read every minute by Chrome on the laptop, with your odoo.com login.</span></div>
+    <div class="card"><img class="shot" src="shots/page_odoo_task2.png" alt="Odoo page, second task"><b>Odoo, after a tap</b><span>A tap steps through your 6 most recently changed open tasks. The corner shows which one, here 2 of 6.</span></div>
+    <div class="card"><img class="shot" src="shots/day_prs.png" alt="Pull requests page"><b>Pull requests</b><span>Your open PRs, the 4 updated most recently, and how many wait for your review. Titles drop their [IMP][task] tags; with three PRs or fewer each gets two lines. The dot shows the checks: teal passed, red failed, amber running, gray none. The square shows the review: a red ! for changes requested, a teal tick for approved. The laptop sends this list, so the page is skipped while the laptop does not reach the Buddy.</span></div>
+    <div class="card"><img class="shot" src="shots/page_github.png" alt="GitHub page"><b>GitHub</b><span>The Buddy's logo (or a picture of yours, built in with <code>tools/make_avatar.py</code>), contribution streak, stars, followers and repositories.</span></div>
+    <div class="card"><img class="shot" src="shots/page_github_heatmap.png" alt="GitHub heatmap"><b>GitHub, after a tap</b><span>The last 26 weeks of contributions as a heatmap.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Your day</h2>
+  <div class="grid g2">
+    <div class="card"><img class="shot" src="shots/day_today.png" alt="Today page"><b>Today</b><span>Today's next meeting from your Odoo or Google calendar, when you came in (your first unlock from 05:00; the evening recap adds your last lock), the hours logged with the time on the timer and in meetings, GitHub reviews and Odoo activities. It comes up by itself at the day's first unlock, when the computer is locked after 17:00, after a shake and after a double knock. Otherwise a swipe reaches it: the automatic round leaves it out.</span></div>
+    <div class="card"><img class="shot" src="shots/page_yesterday.png" alt="Yesterday page"><b>Yesterday</b><span>Your standup card, for 15 seconds before GOOD MORNING at the day's first unlock: when you came in and left, the hours logged on the working day before (Friday on a Monday), up to 3 of your Odoo tasks changed that day, and the pull requests you merged and reviewed.</span></div>
+    <div class="card"><img class="shot" src="shots/page_claude.png" alt="Claude page"><b>Claude</b><span>Claude's 5-hour and 7-day limits with when each resets, and your open Claude Code sessions, the last changed first: project, working, waiting for you or done, and for how long.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Everyday pages</h2>
+  <div class="grid g3">
+    <div class="card"><img class="shot" src="shots/page_clock.png" alt=""><b>Clock</b><span>Set from the internet, 24-hour.</span></div>
+    <div class="card"><img class="shot" src="shots/page_date.png" alt=""><b>Date</b></div>
+    <div class="card"><img class="shot" src="shots/page_weather.png" alt=""><b>Weather</b><span>For your city, refreshed every 15 minutes.</span></div>
+  </div>
+
+  <h3>AbdA, the signature page</h3>
+  <p class="muted small">Eight animated scenes play one after another. Six of them are shown here.</p>
+  <div class="grid g3">
+    <div class="card"><img class="shot" src="shots/page_abda_2.png" alt=""><b>Code rain</b></div>
+    <div class="card"><img class="shot" src="shots/page_abda_4.png" alt=""><b>Wave</b></div>
+    <div class="card"><img class="shot" src="shots/page_abda_6.png" alt=""><b>Synthwave</b></div>
+    <div class="card"><img class="shot" src="shots/page_abda_0.png" alt=""><b>Glitch</b></div>
+    <div class="card"><img class="shot" src="shots/page_abda_8.png" alt=""><b>Bounce</b></div>
+    <div class="card"><img class="shot" src="shots/page_abda_9.png" alt=""><b>Bounce, a moment later</b></div>
+  </div>
+
+  <h3>More pages</h3>
+  <div class="grid g3">
+    <div class="card"><img class="shot" src="shots/page_moon.png" alt=""><b>Moon phase</b><span>The moon tonight.</span></div>
+    <div class="card" style="grid-column: span 2; align-self: center"><span>Moon phase, stocks and coins are ordinary pages too: switch any page on or off in the installer or in the app.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Animations</h2>
+  <p class="lede">One page plays an animation on each visit, and a tap steps to the next. Nine come with the project, all drawn by a script for this screen; add any GIF of your own.</p>
+  <h3>Drawn for this screen</h3>
+  <div class="grid g4">
+    <div class="card"><img class="shot" src="shots/gif_bounce.png" alt=""><b>Buddy bounce</b><span>The Buddy's logo, two eyes and its name, like the logo of an idle DVD player. It changes colour at every wall and lands exactly in a corner twice per loop.</span></div>
+    <div class="card"><img class="shot" src="shots/gif_loading.png" alt=""><b>The install</b><span>It reaches 99% and fails, because it is Monday somewhere.</span></div>
+    <div class="card"><img class="shot" src="shots/gif_rain.png" alt=""><b>Code rain</b></div>
+    <div class="card"><img class="shot" src="shots/gif_starfield.png" alt=""><b>Starfield</b><span>Flying through space, as on a 1995 screen saver.</span></div>
+    <div class="card"><img class="shot" src="shots/gif_fire.png" alt=""><b>Fire</b><span>The demo-scene effect, in big pixels.</span></div>
+    <div class="card"><img class="shot" src="shots/gif_pong.png" alt=""><b>Pong</b><span>Two paddles that never miss.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>When something happens</h2>
+  <p class="muted small">These play over whatever page is on; a tap ends them.</p>
+  <div class="grid g4">
+    <div class="card"><img class="shot" src="shots/react_focus_done.png" alt=""><b>Focus done</b><span>Fireworks after a timer of 25 minutes or more, for 7 seconds.</span></div>
+    <div class="card"><img class="shot" src="shots/react_full_day.png" alt=""><b>Full day</b><span>The ring fills and confetti falls when your Odoo hours pass 8, for 9 seconds.</span></div>
+    <div class="card"><img class="shot" src="shots/react_ci_green.png" alt=""><b>CI green</b><span>A tick draws itself when the last failing pull request passes, for 7 seconds.</span></div>
+    <div class="card"><img class="shot" src="shots/react_screensaver.png" alt=""><b>Screensaver</b><span>After 30 minutes away, until you unlock. It shows your name if you gave one in the installer ("Your name"), else BUDDY.</span></div>
+  </div>
+  <div class="note" style="margin-top: 10pt">
+    <p><b>Where they live.</b> The animations play from the microSD card, folder <code>gifs</code>; without a card, from the Buddy's own storage if you sent some there. The project's <code>sdcard</code> folder holds the files for a new card.</p>
+    <p style="margin:0"><b>Adding one.</b> <code>python3 tools/buddy_gif.py IN.gif sdcard/gifs/NAME.gif</code> fits any GIF to the screen. <code>python3 tools/buddy_put.py sdcard/gifs/NAME.gif</code> sends it to the Buddy over Wi-Fi, and <code>--remove NAME.gif</code> takes one off.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Make it yours</h2>
+  <p class="muted small">All optional, set in the installer under "You and me" and changed there at any time. The pictures are screenshots read from a real Buddy over USB, with the example names Sam and Pixel; only the bouncing name is drawn by a script.</p>
+  <div class="grid g4">
+    <div class="card"><img class="shot" src="shots/persona_greeting.png" alt=""><b>Your greeting</b><span>Knock twice: a mix, HELLO, YO or SALAM with your name, or a line of your own.</span></div>
+    <div class="card"><img class="shot" src="shots/persona_welcome.png" alt=""><b>Welcome back</b><span>When you unlock the laptop after ten minutes or more away.</span></div>
+    <div class="card"><img class="shot" src="shots/persona_birthday.png" alt=""><b>Birthday</b><span>A party hat and confetti all day; your name takes turns with the caption.</span></div>
+    <div class="card"><img class="shot" src="shots/persona_anniversary.png" alt=""><b>Anniversary</b><span>The day you set the Buddy up, every year after.</span></div>
+    <div class="card"><img class="shot" src="shots/persona_stretch.png" alt=""><b>Stretch break</b><span>During the focus timer, every 25, 50 or 90 minutes, for a minute. The timer runs on.</span></div>
+    <div class="card"><img class="shot" src="shots/persona_lunch.png" alt=""><b>Lunch time</b><span>For the first minute of your lunch hour, on work days.</span></div>
+    <div class="card"><img class="shot" src="shots/persona_water.png" alt=""><b>Water</b><span>For half a minute on the hour in your working day, if you switched it on.</span></div>
+    <div class="card"><img class="shot" src="shots/persona_message.png" alt=""><b>Your message</b><span>A line of your own, for 12 seconds every quarter of an hour when nothing else shows.</span></div>
+    <div class="card"><img class="shot" src="shots/persona_weekend.png" alt=""><b>Days off</b><span>The Buddy dozes on your days off when nothing else is going on.</span></div>
+    <div class="card"><img class="shot" src="shots/persona_bounce.png" alt=""><b>Your name bounces</b><span>The screensaver after 30 minutes away shows your name.</span></div>
+  </div>
+  <h3 style="margin-top: 10pt">Four faces</h3>
+  <p class="muted small">Classic, cat, robot and minimal, each row showing normal, happy, angry, sleepy, the birthday party and the wave at the end of setup. Every mood works in every style. These are screenshots read from a real Buddy over USB.</p>
+  <img src="../images/faces.png" alt="" style="width: 100%; border-radius: 6pt">
+  <p class="small muted" style="margin-top: 5pt">The Buddy's own name shows when it starts ("Pixel is ready!"). The lunch face and the DAY DONE page follow your lunch hour and the end of your working day.</p>
+</section>
+
+<section>
+  <h2>Bug Hop</h2>
+  <p class="lede">A game for a break. Swipe to it, one page past the animations: the automatic round leaves it out.</p>
+  <div class="grid g3">
+    <div class="card"><img class="shot" src="shots/day_game_run.png" alt=""><b>Run</b><span>A tap starts a run. The score is the distance, and the pace picks up with it.</span></div>
+    <div class="card"><img class="shot" src="shots/day_game_hop.png" alt=""><b>Hop</b><span>A tap hops over a bug. Later come bigger bugs, pairs, and wasps to stay down for.</span></div>
+    <div class="card"><img class="shot" src="shots/day_game_over.png" alt=""><b>Splat</b><span>The best score is kept. A tap starts again.</span></div>
+  </div>
+
+  <h2 style="margin-top: 18pt">A line from the laptop</h2>
+  <div class="grid g2">
+    <div class="card"><img class="shot" src="shots/day_notice.png" alt=""></div>
+    <div class="card" style="align-self: center"><span><code>buddy-say "tests finished"</code> shows a line for 20 seconds; a tap puts it away. The fish shell sends one by itself when a command that ran for over a minute ends: DONE or FAILED with the exit code, and the command's first two words.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Using it</h2>
+  <table>
+    <tr><th style="width: 38%">Do this</th><th>What happens</th></tr>
+    <tr><td>Swipe left or right</td><td>Next or previous page</td></tr>
+    <tr><td>Swipe up or down</td><td>Brighter or dimmer. The level is remembered.</td></tr>
+    <tr><td>Tap the face</td><td>Next mood</td></tr>
+    <tr><td>Tap the face during MEETING IN n MIN</td><td>The laptop opens the meeting's video call in the browser</td></tr>
+    <tr><td>Press the BOOT button</td><td>The laptop locks within a second, over Wi-Fi</td></tr>
+    <tr><td>Tap the Odoo page</td><td>Next task</td></tr>
+    <tr><td>Tap the GitHub page</td><td>Switch between streak and heatmap</td></tr>
+    <tr><td>Tap the animation page</td><td>Next animation</td></tr>
+    <tr><td>Double-tap</td><td>Stop or restart the automatic page flipping</td></tr>
+    <tr><td>Lay the Buddy flat for 2 seconds</td><td>Start the timer. Stand it up to stop it.</td></tr>
+    <tr><td>Knock twice on the Buddy's head</td><td>It looks up with a "WHAT'S UP?" or "WHO'S THERE?", then shows the Today page. An animation or a line from the laptop goes away instead. Not while the computer is locked.</td></tr>
+    <tr><td>Shake the Buddy</td><td>Dizzy, a look, then the Today page for 12 seconds</td></tr>
+    <tr><td>Swipe past the animations</td><td>Bug Hop</td></tr>
+    <tr><td>Hold the screen for about 3 seconds</td><td>Open the Wi-Fi setup hotspot. Hold again to close it. It opens by itself only when no Wi-Fi is saved; a saved one that fails is retried every minute.</td></tr>
+    <tr><td>Lock the computer</td><td>The Buddy goes to AWAY or LUNCH BREAK within about 5 seconds and stays on the face. Swipes, taps, the game and the setup hotspot are blocked until you unlock.</td></tr>
+  </table>
+
+  <h3>Where the information comes from</h3>
+  <table>
+    <tr><th style="width: 24%">What</th><th style="width: 38%">Source</th><th>How often</th></tr>
+    <tr><td>Hours and tasks</td><td>odoo.com, read by Chrome on the laptop with your login</td><td>Every minute</td></tr>
+    <tr><td>GitHub page</td><td>Public GitHub profile, over Wi-Fi</td><td>Every 30 minutes</td></tr>
+    <tr><td>Weather</td><td>Weather service, over Wi-Fi</td><td>Every 15 minutes</td></tr>
+    <tr><td>Screen lock</td><td>The laptop, over Wi-Fi or else USB</td><td>Checked every 5 seconds</td></tr>
+    <tr><td>Pull requests</td><td>The laptop, over Wi-Fi or else USB</td><td>Every 10 minutes</td></tr>
+    <tr><td>Claude Code sessions</td><td>The laptop, over Wi-Fi or else USB</td><td>Within about 5 seconds</td></tr>
+    <tr><td>Microphone in use</td><td>The laptop, over Wi-Fi or else USB</td><td>Checked every 5 seconds</td></tr>
+    <tr><td>Claude's limits</td><td>The laptop, from Claude Code's status line</td><td>When they change</td></tr>
+    <tr><td>Meetings and activities</td><td>odoo.com, read by Chrome on the laptop with your login</td><td>Every minute</td></tr>
+    <tr><td>Google meetings</td><td>Your Google Calendar as GNOME syncs it to the laptop</td><td>Checked every minute; arrives after GNOME syncs</td></tr>
+  </table>
+
+</section>
+
+<section>
+  <h2>From the laptop, without a cable</h2>
+  <table>
+    <tr><th style="width: 30%">What</th><th>How</th></tr>
+    <tr><td>Lock state, microphone, pull requests, Claude alerts</td><td>By itself: the background program <code>buddy-link</code> sends them.</td></tr>
+    <tr><td>Quiet while the timer runs</td><td>By itself: notifications off and the Caffeine extension on. Caffeine lets go after 30 minutes without input, so an unattended laptop still locks.</td></tr>
+    <tr><td>A line on the screen</td><td><code>buddy-say "tests finished"</code></td></tr>
+    <tr><td>A new firmware</td><td><code>python3 tools/buddy_flash.py FILE-app.bin</code> (the "app" file of a release; without a file, your own build)<br>About 1.5 minutes. The screen shows UPDATING and the Buddy restarts. It takes only firmware signed with your key, and an update that breaks off goes on where it stopped when you run the command again.</td></tr>
+    <tr><td>A check-up</td><td><code>python3 tools/buddy_check.py --card</code><br>Uptime, memory, Wi-Fi signal, crash dump, and a write and read test of the card.</td></tr>
+    <tr><td>An animation</td><td><code>python3 tools/buddy_put.py FILE.gif</code></td></tr>
+  </table>
+  <p class="small muted" style="margin-top: 5pt">The commands run in the project folder. Every message is sealed with a key that only the laptop and the Buddy hold: <code>./setup.sh</code> makes it on the laptop and hands it to the Buddy over the USB cable. The Buddy keeps a new firmware once it has answered the laptop again; one that does not start is replaced by the firmware before it at the next restart. Settings, screenshots and the card test stay on the USB cable, which is also how a Buddy that no longer joins the Wi-Fi is rescued.</p>
+
+  <h3>Good to know</h3>
+  <div class="note">
+    <p><b>What needs the laptop.</b> The lock faces, ON AIR, Odoo, the pull requests, the Claude page and alerts, joining a meeting and the BOOT button come from <code>buddy-link</code> on the laptop. It reaches the Buddy over Wi-Fi while both are on the same network, so the Buddy can sit on any charger. Without the laptop the Buddy still shows GitHub, weather, the clock and the animations.</p>
+    <p><b>The Buddy's address.</b> The laptop finds the Buddy at the address your network gives it. If that changes, plug the Buddy into the laptop once: <code>buddy-link</code> reads the new address through the cable.</p>
+    <p><b>Odoo comes through Chrome.</b> The extension in <code>tools/chrome-odoo</code> reads your figures with your odoo.com login, so no API key is needed and none is stored on the Buddy. Signed out, or with Chrome closed for 30 minutes, the Odoo page leaves the round.</p>
+    <p><b>Security.</b> Everything between the laptop and the Buddy is encrypted with a key only the two hold, and a firmware update must also carry a signature from a key that never leaves the laptop. The Buddy has no open network ports. Anyone with a USB cable can still read and reflash it, so keep it where strangers cannot plug in.</p>
+  </div>
+</section>
+
+</body>
+</html>

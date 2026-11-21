@@ -1,0 +1,142 @@
+#pragma once
+// Runtime settings: the values config.h used to fix at compile time, stored
+// on the board in /config.json and edited over serial by the web flasher.
+// Pure C++ with no Arduino headers, so it is unit-tested on the PC
+// (pio test -e native). main.cpp does all file and serial I/O.
+#include <ArduinoJson.h>
+#include <stddef.h>
+#include <stdint.h>
+#include "schema.h"
+
+static const int CONFIG_VERSION = 2;
+static const uint8_t SETTINGS_PAGE_COUNT = 8;
+// Index order matches the PAGE_* ids in main.cpp (face = 0 ... github = 6, coin = 7).
+extern const char *const SETTINGS_PAGE_KEYS[SETTINGS_PAGE_COUNT];
+// The pages after those: abda = 8 ... claude = 14, again the PAGE_* ids in main.cpp.
+// They show when they have something to show; "more_pages" can switch each off.
+static const uint8_t SETTINGS_MORE_COUNT = 7;
+extern const char *const SETTINGS_MORE_KEYS[SETTINGS_MORE_COUNT];
+// Every page of the round, by PAGE_* id: the words of "page_order".
+static const uint8_t SETTINGS_ROUND_COUNT = SETTINGS_PAGE_COUNT + SETTINGS_MORE_COUNT;
+extern const char *const SETTINGS_ROUND_KEYS[SETTINGS_ROUND_COUNT];
+// The round as a Buddy without "page_order" shows it.
+extern const uint8_t SETTINGS_ROUND_DEFAULT[SETTINGS_ROUND_COUNT];
+
+static const uint8_t SETTINGS_STOCK_MAX = 5;
+// One stock slot. A slot switched off keeps its symbol; the device skips it.
+struct Stock {
+  char symbol[11];
+  bool on;
+};
+
+static const uint8_t SETTINGS_COIN_MAX = 5;
+enum : uint8_t { COIN_COINBASE = 0, COIN_FINNHUB = 1 };
+// One coin slot: a Coinbase pair ("SOL-EUR") and where its price comes from.
+// A slot switched off keeps its pair; the device skips it.
+struct Coin {
+  char    pair[22];
+  uint8_t source;   // COIN_*
+  bool    on;
+};
+
+// Choice settings are stored as the index of their word.
+enum : uint8_t { MOUNT_LEFT = 0, MOUNT_RIGHT = 1 };
+enum : uint8_t { TEMP_CELSIUS = 0, TEMP_FAHRENHEIT = 1 };
+enum : uint8_t { WIND_KMH = 0, WIND_MPH = 1 };
+enum : uint8_t { CLOCK_24H = 0, CLOCK_12H_FORMAT = 1 };
+
+// Night mode: from `start` until `end` (local hours, 0-23, they differ; the
+// span may cross midnight) the backlight drops to `brightness` (8-255).
+struct Night {
+  bool    enabled;
+  uint8_t start;
+  uint8_t end;
+  uint8_t brightness;
+};
+
+// The working day: hours 0-23 (end 1-24) with start before end. Lunch is the
+// hour it starts.
+struct Work {
+  uint8_t start;
+  uint8_t end;
+  uint8_t lunch;
+};
+
+enum FaceStyle : uint8_t { FACE_CLASSIC, FACE_CAT, FACE_ROBOT, FACE_MINIMAL };
+
+struct Settings {
+  uint8_t mount;              // MOUNT_*
+  uint8_t theme;              // 0-4
+  uint8_t brightness;         // 8-255: a copy of /display.json's level, which wins at boot
+  char    githubUser[40];     // "" hides the GitHub page
+  char    tzName[65];         // IANA name, for the weather request
+  char    tzRule[65];         // POSIX TZ rule, for the clock
+  char    ticker[11];         // copy of stocks[0].symbol, kept for firmware 1.2
+  Stock   stocks[SETTINGS_STOCK_MAX];   // slot order; stocks[0] is always on
+  uint8_t stockCount;                   // 1-5
+  char    stockKey[65];
+  Coin    coins[SETTINGS_COIN_MAX];
+  uint8_t coinCount;   // 1-5; coins[0] is always on
+  char    lat[16];
+  char    lon[16];
+  uint8_t clockFormat;        // CLOCK_24H or CLOCK_12H_FORMAT
+  uint8_t tempUnit;           // TEMP_*
+  uint8_t windUnit;           // WIND_*
+  Night   night;
+  bool    pages[SETTINGS_PAGE_COUNT];
+  char    name[13];           // the owner's name or initials: the bounce screensaver and the greetings; "" for none
+  // Personal touches (lib/persona). Every default leaves the Buddy as it was.
+  char    buddyName[13];      // the Buddy's own name, shown when it starts; "" for none
+  uint8_t greeting;           // PersonaGreeting: what a double knock answers
+  char    greetingText[27];   // the line of GREETING_CUSTOM
+  Work    work;
+  uint8_t weekend;            // PersonaWeekend: the days off
+  char    birthday[6];        // "MM-DD" or ""
+  char    since[11];          // "YYYY-MM-DD": the day the Buddy was set up, or ""
+  uint8_t breakMin;           // a stretch reminder after so many minutes of focus; 0 = off
+  bool    water;              // a sip reminder on the hour, in work hours
+  char    message[27];        // a line of the owner's, shown now and then; "" for none
+  uint8_t face;               // FACE_*: how the eyes are drawn
+  // The round of pages (1.1). The defaults leave the Buddy as it was.
+  bool    morePages[SETTINGS_MORE_COUNT];        // by PAGE_* id - SETTINGS_PAGE_COUNT; all on
+  uint8_t pageOrder[SETTINGS_ROUND_COUNT];       // PAGE_* ids, first to last; pages left out follow in the usual order
+  uint8_t pageOrderCount;                        // 0-15; 0 = the usual order
+};
+
+// The round: every page id once, the ones in s.pageOrder first (a page named
+// twice counts once), then the rest in SETTINGS_ROUND_DEFAULT's order. Pure:
+// it ignores the on/off switches. out holds SETTINGS_ROUND_COUNT ids.
+void settingsRound(const Settings &s, uint8_t *out);
+
+// POSIX rule for a fixed UTC offset in hours, rounded to 15 minutes:
+// +8 -> "<+08>-8", -5 -> "<-05>5", 0 -> "UTC0". POSIX counts west of UTC as
+// positive, so the number's sign is the reverse of the offset's.
+// False outside -12..+14 h or when out is too small.
+bool tzRuleFromOffset(float hours, char *out, size_t outLen);
+
+// Paths a stored file lacked, so they got their defaults ("ticker",
+// "pages.github", ...): keys[0..count).
+using AddedKeys = schema::Paths;
+
+// out = defaults, then every valid key from `stored` on top. Missing keys go
+// to `added`, invalid ones to `invalid` (key -> message) and keep their
+// default. A null or non-object `stored` (no file) adds nothing: there is
+// nothing to compare against. Unknown keys are ignored.
+void settingsLoad(const Settings &defaults, JsonVariantConst stored,
+                  Settings &out, AddedKeys &added, JsonObject invalid);
+
+// out = current with `patch` merged in (a partial object is fine; groups such as "pages"
+// merge per field, lists are replaced whole). True only if every known key in the patch is valid;
+// otherwise `errors` holds key -> message and out must be discarded.
+// Unknown keys and "v" are ignored.
+bool settingsMerge(const Settings &current, JsonVariantConst patch,
+                   Settings &out, JsonObject errors);
+
+// Every key, plus "v" = CONFIG_VERSION.
+void settingsToJson(const Settings &s, JsonObject out);
+
+// {"ssid": 1-32 chars, "password": required; "" for an open network, else
+// 8-63 chars}.
+// ssidLen must be >= 33 and passLen >= 64.
+bool wifiValidate(JsonVariantConst wifi, char *ssid, size_t ssidLen,
+                  char *pass, size_t passLen, JsonObject errors);

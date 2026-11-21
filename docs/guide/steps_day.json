@@ -1,0 +1,21 @@
+[
+ {"name": "day_today", "state": {"page": 12, "demo": 100}, "wait": 1.5},
+ {"name": "day_onair", "state": {"page": 0, "demo": 11}, "wait": 1.5},
+ {"name": "day_meeting", "state": {"page": 0, "demo": 12}, "wait": 0.5},
+ {"name": "day_meeting_name", "state": null, "wait": 1.7},
+ {"name": "day_timer", "state": {"page": 0, "demo": 7}, "wait": 1.5},
+ {"name": "day_timer_done", "state": {"page": 0, "demo": 8}, "wait": 1.5},
+ {"name": "day_dizzy_0", "state": {"page": 0, "demo": 13}, "wait": 1.5},
+ {"name": "day_dizzy_1", "state": null, "wait": 0.3},
+ {"name": "day_really", "state": {"page": 0, "demo": 14}, "wait": 2.3},
+ {"name": "day_nudge_0", "state": {"page": 0, "demo": 4}, "wait": 1.5},
+ {"name": "day_nudge_1", "state": null, "wait": 0.5},
+ {"name": "day_nudge_2", "state": null, "wait": 0.5},
+ {"name": "day_claude", "state": {"page": 0, "demo": 9, "claude": 1, "at": "client-a"}, "wait": 2.4},
+ {"name": "day_prs", "state": {"page": 10, "demo": 100}, "wait": 1.2},
+ {"name": "day_notice", "state": {"page": 1, "demo": 100}, "say": "DONE: pio test", "wait": 1.0},
+ {"name": "day_game_idle", "state": {"page": 13, "demo": 100}, "wait": 21.5},
+ {"name": "day_game_run", "state": {"page": 13, "tap": true}, "wait": 1.9},
+ {"name": "day_game_hop", "state": {"page": 13, "tap": true}, "wait": 0.12},
+ {"name": "day_game_over", "state": null, "wait": 5}
+]

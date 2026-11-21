@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1272" viewBox="0 0 900 1272" role="img" aria-labelledby="t d" font-family="Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"><title id="t">A signed firmware update over Wi-Fi</title><desc id="d">Sequence of a signed firmware update over Wi-Fi. The laptop signs the image with ECDSA P-256; the key never leaves the laptop. It sends B with the size and signature; the buddy answers the offset to start from. 1 KB D pieces follow; the buddy writes the spare slot and hashes as it goes, then checks the signature against the public key built into its firmware, refusing a mismatch. It restarts into the new slot on trial; the first link packet keeps it, a crash before that rolls back. A broken-off update goes on where it stopped: tested cut at 63 %, resumed at 65 %.</desc><rect x="0.5" y="0.5" width="899" height="1271" rx="14" fill="#FBF9FA" stroke="#E6DDE3"/><line x1="220" y1="168" x2="220" y2="1082" stroke="#CFC4CC" stroke-width="2"/>
+<line x1="660" y1="168" x2="660" y2="1082" stroke="#CFC4CC" stroke-width="2"/>
+<text x="40.0" y="54.0" font-size="27" font-weight="700" fill="#241A22" text-anchor="start">A signed firmware update over Wi-Fi</text>
+<text x="40.0" y="84.0" font-size="16" font-weight="400" fill="#55464F" text-anchor="start">The private key stays on the laptop. The buddy can only check.</text>
+<rect x="90.0" y="112.0" width="260.0" height="56.0" rx="10" fill="#714B67"/>
+<text x="220.0" y="137.0" font-size="16" font-weight="700" fill="#FFFFFF" text-anchor="middle">Laptop</text>
+<text x="220.0" y="157.0" font-size="13" font-weight="400" fill="#EADFE6" text-anchor="middle" font-family="'DejaVu Sans Mono', Menlo, Consolas, monospace">buddy_flash.py</text>
+<rect x="530.0" y="112.0" width="260.0" height="56.0" rx="10" fill="#1C171E"/>
+<text x="660.0" y="137.0" font-size="16" font-weight="700" fill="#FFFFFF" text-anchor="middle">Monitor Buddy</text>
+<text x="660.0" y="157.0" font-size="13" font-weight="400" fill="#EADFE6" text-anchor="middle" font-family="'DejaVu Sans Mono', Menlo, Consolas, monospace">the firmware</text>
+<rect x="45.0" y="192.0" width="350.0" height="80.0" rx="10" fill="#FFFFFF" stroke="#E6DDE3" stroke-width="1"/>
+<circle cx="69.0" cy="214.0" r="12" fill="#714B67"/>
+<text x="69.0" y="219.0" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+<text x="91.0" y="219.0" font-size="16" font-weight="700" fill="#241A22" text-anchor="start">Sign the image</text>
+<text x="91.0" y="241.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">ECDSA P-256 over SHA-256 (RFC 6979)</text>
+<text x="91.0" y="261.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">the key never leaves the laptop</text>
+<line x1="220.0" y1="314.0" x2="652.8" y2="314.0" stroke="#714B67" stroke-width="2" stroke-linecap="round"/>
+<path d="M660.0,314.0 L651.8,317.7 L651.8,310.3 Z" fill="#714B67"/>
+<circle cx="358.6" cy="299.0" r="12" fill="#714B67"/>
+<text x="358.6" y="304.0" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+<text x="378.6" y="304.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">B: size and signature</text>
+<line x1="660.0" y1="358.0" x2="227.2" y2="358.0" stroke="#55464F" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M220.0,358.0 L228.2,354.3 L228.2,361.7 Z" fill="#55464F"/>
+<text x="440.0" y="348.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="middle" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">the offset to start from: 0, or where it stopped</text>
+<line x1="220.0" y1="412.0" x2="654.4" y2="412.0" stroke="#714B67" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M660.0,412.0 L653.6,414.9 L653.6,409.1 Z" fill="#714B67"/>
+<line x1="220.0" y1="419.0" x2="654.4" y2="419.0" stroke="#714B67" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M660.0,419.0 L653.6,421.9 L653.6,416.1 Z" fill="#714B67"/>
+<line x1="220.0" y1="426.0" x2="654.4" y2="426.0" stroke="#714B67" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M660.0,426.0 L653.6,428.9 L653.6,423.1 Z" fill="#714B67"/>
+<circle cx="306.4" cy="397.0" r="12" fill="#714B67"/>
+<text x="306.4" y="402.0" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+<text x="326.4" y="402.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">D: 1 KB pieces, about 1,900 of them</text>
+<rect x="485.0" y="446.0" width="350.0" height="60.0" rx="10" fill="#FFFFFF" stroke="#E6DDE3" stroke-width="1"/>
+<text x="501.0" y="473.0" font-size="16" font-weight="700" fill="#241A22" text-anchor="start">Writes the spare slot</text>
+<text x="501.0" y="495.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">and hashes every piece as it comes</text>
+<rect x="485.0" y="524.0" width="350.0" height="80.0" rx="10" fill="#FFFFFF" stroke="#E6DDE3" stroke-width="1"/>
+<circle cx="509.0" cy="546.0" r="12" fill="#714B67"/>
+<text x="509.0" y="551.0" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
+<text x="531.0" y="551.0" font-size="16" font-weight="700" fill="#241A22" text-anchor="start">Checks the signature</text>
+<text x="531.0" y="573.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">against UPDATE_KEY, the public half</text>
+<text x="531.0" y="593.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">built into the running firmware</text>
+<rect x="515.0" y="616.0" width="320.0" height="58.0" rx="10" fill="#FBF9FA" stroke="#B9ABB5" stroke-width="1"/>
+<circle cx="537.0" cy="645.0" r="10" fill="#8A7A86"/>
+<path d="M533,641.0 l8,8 m0,-8 l-8,8" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="557.0" y="641.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">No match: it answers &quot;refused&quot; and</text>
+<text x="557.0" y="661.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">drops the update.</text>
+<line x1="660.0" y1="714.0" x2="227.2" y2="714.0" stroke="#55464F" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M220.0,714.0 L228.2,710.3 L228.2,717.7 Z" fill="#55464F"/>
+<text x="440.0" y="704.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="middle" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">ok: restarting</text>
+<rect x="485.0" y="734.0" width="350.0" height="60.0" rx="10" fill="#FFFFFF" stroke="#E6DDE3" stroke-width="1"/>
+<circle cx="509.0" cy="756.0" r="12" fill="#714B67"/>
+<text x="509.0" y="761.0" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">5</text>
+<text x="531.0" y="761.0" font-size="16" font-weight="700" fill="#241A22" text-anchor="start">Restarts into the new slot</text>
+<text x="531.0" y="783.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">on trial until it hears the laptop again</text>
+<line x1="220.0" y1="836.0" x2="652.8" y2="836.0" stroke="#714B67" stroke-width="2" stroke-linecap="round"/>
+<path d="M660.0,836.0 L651.8,839.7 L651.8,832.3 Z" fill="#714B67"/>
+<circle cx="318.1" cy="821.0" r="12" fill="#714B67"/>
+<text x="318.1" y="826.0" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">6</text>
+<text x="338.1" y="826.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">the next packet from buddy-link</text>
+<rect x="485.0" y="856.0" width="350.0" height="40.0" rx="10" fill="#FFFFFF" stroke="#E6DDE3" stroke-width="1"/>
+<text x="501.0" y="883.0" font-size="16" font-weight="700" fill="#241A22" text-anchor="start">Keeps the new firmware for good</text>
+<rect x="515.0" y="908.0" width="320.0" height="58.0" rx="10" fill="#FBF9FA" stroke="#B9ABB5" stroke-width="1"/>
+<circle cx="537.0" cy="937.0" r="10" fill="#8A7A86"/>
+<path d="M533,933.0 l8,8 m0,-8 l-8,8" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="557.0" y="933.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">A crash or restart before that packet:</text>
+<text x="557.0" y="953.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">back to the old firmware.</text>
+<line x1="660.0" y1="1006.0" x2="227.2" y2="1006.0" stroke="#55464F" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M220.0,1006.0 L228.2,1002.3 L228.2,1009.7 Z" fill="#55464F"/>
+<text x="440.0" y="996.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="middle" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">health: the build id that runs</text>
+<rect x="45.0" y="1026.0" width="350.0" height="40.0" rx="10" fill="#FFFFFF" stroke="#E6DDE3" stroke-width="1"/>
+<circle cx="69.0" cy="1048.0" r="12" fill="#714B67"/>
+<text x="69.0" y="1053.0" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">7</text>
+<text x="91.0" y="1053.0" font-size="16" font-weight="700" fill="#241A22" text-anchor="start">&quot;The Buddy runs the new firmware.&quot;</text>
+<rect x="40.0" y="1110.0" width="820.0" height="132.0" rx="12" fill="#E8F6F7" stroke="#BFE2E5" stroke-width="1"/>
+<text x="64.0" y="1142.0" font-size="16" font-weight="700" fill="#241A22" text-anchor="start">Broken off halfway? Run the same command again.</text>
+<text x="64.0" y="1166.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">The buddy keeps a broken-off update for 10 minutes. Signing is deterministic, so the second run sends the very</text>
+<text x="64.0" y="1186.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">same B, and the buddy answers with the offset where it stopped.</text>
+<rect x="64.0" y="1210.0" width="772.0" height="10.0" rx="5" fill="#CFEAEC"/>
+<path d="M64.0,1210.0 H546.4 Q550.4,1210.0 550.4,1214.0 V1216.0 Q550.4,1220.0 546.4,1220.0 H64.0 Z" fill="#7A3A6C"></path>
+<path d="M565.8,1210.0 H832.0 Q836.0,1210.0 836.0,1214.0 V1216.0 Q836.0,1220.0 832.0,1220.0 H565.8 Z" fill="#7A3A6C"></path>
+<text x="550.4" y="1204.0" font-size="13" font-weight="600" fill="#241A22" text-anchor="end" stroke="#E8F6F7" stroke-width="5" stroke-linejoin="round" paint-order="stroke">cut at 63 %</text>
+<text x="565.8" y="1204.0" font-size="13" font-weight="600" fill="#241A22" text-anchor="start" stroke="#E8F6F7" stroke-width="5" stroke-linejoin="round" paint-order="stroke">went on at 65 %</text></svg>

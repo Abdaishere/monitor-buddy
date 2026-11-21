@@ -1,0 +1,48 @@
+name: Installer site
+
+# Builds the browser installer (web/) with a copy of every release's firmware
+# and puts it on GitHub Pages: https://abdaishere.github.io/monitor-buddy/
+# See tools/pages_site.py and docs/HANDOVER.md, section 4.7.
+#
+# It runs when a release is published, and by hand (Actions -> Installer site
+# -> Run workflow). Pages must be switched on once, with "GitHub Actions" as
+# the source: Settings -> Pages, or
+#   gh api -X POST repos/Abdaishere/monitor-buddy/pages -f build_type=workflow
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # all tags: pages_site.py reads settings.h at each tag
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Assemble the site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/pages_site.py _site
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v5

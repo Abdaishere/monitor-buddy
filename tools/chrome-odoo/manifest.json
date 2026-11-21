@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Monitor Buddy",
+  "version": "1.3",
+  "description": "Shows a line on your Monitor Buddy from the toolbar, and (optional) reads your hours, tasks and meetings from www.odoo.com with your signed-in session for the Buddy's Odoo page.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsdcGFetQzVZFBq7R9iItvrsmOkyYLQJPlqBaosO6geIfcttvvI+gNd/dmmQG7gCa2k5VqfnBfUG6f36zbkO8DFHGBHGvyi8IevL16M5KG4ugYxry47BQ2OjQ3hL/4XPwV4GQUlMdJp1HgdEup8s8q1ziK9XhC9tz+BlP87wc0GfOR92OPB8ChIGxsFEzQz4lwfJSAsbPQ0CFtw6SOuK8yXcshlbl2TTR3Asb4hG/RAMKQLRwg40GA68DY/5W4RqJDJbrkEvzDGsdvduff9BXucVyWB07sYG0+7Z2sxNebP37EvOwU4L2UUDTD5uI7BE8oaAb9XXansYkH4GTINpS+wIDAQAB",
+  "permissions": [
+    "alarms",
+    "nativeMessaging"
+  ],
+  "host_permissions": [
+    "https://www.odoo.com/*"
+  ],
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "action": {
+    "default_title": "Say something on the Buddy",
+    "default_popup": "popup.html"
+  }
+}

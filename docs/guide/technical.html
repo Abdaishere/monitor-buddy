@@ -1,0 +1,224 @@
+<section>
+  <p class="tag">Technical reference</p>
+  <h2>How it fits together</h2>
+  <p class="lede">The Buddy fetches the weather, its GitHub page, the time, and stock and coin prices when those pages are on. Everything else comes from the laptop.</p>
+
+  <div class="grid g3 small muted" style="text-align: center; margin-bottom: 3pt">
+    <div>odoo.com · GitHub · Google Calendar · Anthropic<br>↓</div>
+    <div></div>
+    <div>Open-Meteo · GitHub · Finnhub · Coinbase · NTP servers<br>↓</div>
+  </div>
+  <div class="grid g3">
+    <div class="note card"><b style="margin-top: 0">Laptop</b>
+      <span><code>buddy-link</code>, a systemd user service, collects what the laptop knows and sends it on.</span>
+      <span style="margin-top: 4pt">The Chrome extension <i>Monitor Buddy: Odoo</i> reads odoo.com and leaves the result for <code>buddy-link</code> through <code>buddy_odoo_host.py</code>.</span>
+      <span style="margin-top: 4pt">The tools you run, such as <code>buddy-say</code>, reach the Buddy directly.</span>
+    </div>
+    <div class="note card"><b style="margin-top: 0">Link</b>
+      <span>→ Wi-Fi: UDP port 4747, sealed with the link key.</span>
+      <span style="margin-top: 4pt">→ USB: <code>@MB</code> command lines for settings and tests, and the fallback for STATE and Odoo data when Wi-Fi gets no answer.</span>
+      <span style="margin-top: 4pt">← USB: the Buddy's log, with its IP address.</span>
+    </div>
+    <div class="note card"><b style="margin-top: 0">Buddy</b>
+      <span>An ESP32-C6 running <code>src/main.cpp</code>, up to 30 frames a second.</span>
+      <span style="margin-top: 4pt">A network task fetches over the Buddy's own Wi-Fi; a knock task reads the motion sensor.</span>
+      <span style="margin-top: 4pt">Settings and Wi-Fi in internal flash, animations on the microSD card.</span>
+    </div>
+  </div>
+
+  <h3>Where each piece of data travels</h3>
+  <table class="small">
+    <tr><th style="width: 24%">Data</th><th>Path</th></tr>
+    <tr><td>Odoo hours, tasks, meetings, activities</td><td>The extension, with Chrome's login → <code>buddy_odoo_host.py</code> → <code>~/.cache/monitor-buddy/odoo.json</code> → <code>buddy-link</code> → message <code>O</code>. The meetings' video call links stay in <code>buddy-link</code>.</td></tr>
+    <tr><td>Google meetings</td><td>GNOME's copy in <code>~/.cache/evolution/calendar/*/cache.db</code> → <code>buddy_calendar.py</code> → added to <code>O</code>, so they travel only when there is Odoo data to send</td></tr>
+    <tr><td>Screen lock, microphone</td><td><code>loginctl</code> (logind's <code>LockedHint</code>), <code>pw-dump</code> (PipeWire) → the STATE message</td></tr>
+    <tr><td>Pull requests</td><td><code>gh api graphql</code> with gh's login, also counting yesterday's merged and reviewed ones → STATE</td></tr>
+    <tr><td>Claude Code sessions</td><td>Claude Code hooks write <code>~/.cache/monitor-buddy/claude</code> for the face, and one file per session in <code>~/.cache/monitor-buddy/sessions/</code> for the Claude page → STATE</td></tr>
+    <tr><td>Timer running</td><td>The status byte of the Buddy's answers → <code>buddy-link</code> switches notifications and Caffeine</td></tr>
+    <tr><td>Join a meeting, lock the laptop</td><td>A tap on MEETING IN n MIN or a BOOT press → a bit in the answer to <code>buddy-link</code>'s next ping, which comes twice a second → <code>xdg-open</code> on the meeting's link, or <code>loginctl lock-session</code></td></tr>
+    <tr><td>The Buddy's address</td><td><code>ip=</code> in the Buddy's USB log → <code>buddy-link</code> writes <code>~/.cache/monitor-buddy/address</code> → every Wi-Fi tool</td></tr>
+    <tr><td>Weather, GitHub page, stock and coin prices, time</td><td>The Buddy itself: HTTPS checked against the Mozilla root certificates; NTP from pool.ntp.org and time.cloudflare.com</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Files and folders</h2>
+  <p class="small muted">Project paths are relative to the project folder.</p>
+  <table class="small">
+    <tr><th style="width: 38%">Path</th><th>What it is</th></tr>
+    <tr><th colspan="2">Project</th></tr>
+    <tr><td><code>src/</code></td><td><code>main.cpp</code>, the firmware; <code>lunch_face.h</code> and <code>gh_avatar.h</code>, pictures built into it</td></tr>
+    <tr><td><code>lib/</code>, <code>test/</code></td><td>Libraries the firmware uses, and their unit tests</td></tr>
+    <tr><td><code>config/config.h</code></td><td>Build-time defaults, made from <code>config.h.example</code>. The keys are not in it: <code>./setup.sh</code> gives them to the Buddy over USB</td></tr>
+    <tr><td><code>platformio.ini</code>, <code>partitions.csv</code></td><td>Build setup, with the environments <code>esp32-c6</code> and <code>native</code>, and flash layout</td></tr>
+    <tr><td><code>.pio/build/esp32-c6/</code></td><td>Build output: <code>firmware.bin</code> to flash, <code>firmware.elf</code> for crash dumps.</td></tr>
+    <tr><td><code>tools/</code></td><td>The laptop programs, the Chrome extension in <code>chrome-odoo/</code>, and upstream's tools with their tests</td></tr>
+    <tr><td><code>docs/guide/</code></td><td>This guide, its pictures in <code>shots/</code>, and the scripts that took them</td></tr>
+    <tr><td><code>web/</code>, <code>web-tests/</code></td><td>The browser installer (upstream's, adapted to this fork) and its tests. <code>tools/pages_site.py</code> builds the installer site from it and this fork's releases</td></tr>
+    <tr><th colspan="2">Laptop</th></tr>
+    <tr><td><code>~/.config/systemd/user/<br>buddy-link.service</code></td><td>Runs <code>tools/buddy_link.py</code> through <code>sg dialout</code>, and again 10&nbsp;s after any exit</td></tr>
+    <tr><td><code>~/.cache/monitor-buddy/</code></td><td><code>address</code>: the Buddy's IP. <code>odoo.json</code>: the last Odoo read. <code>claude</code> and <code>sessions/</code>: from the Claude Code hooks. <code>focus</code>: the settings to restore after the timer.</td></tr>
+    <tr><td><code>~/.local/share/<wbr>monitor-buddy/days.csv</code></td><td>Each work day's first unlock and last lock (a day runs from 05:00 to 05:00) → STATE; <code>buddy-link</code> reads it again when it starts</td></tr>
+    <tr><td><code>~/.config/google-chrome/<wbr>NativeMessagingHosts/<wbr>com.monitor_buddy.odoo.json</code></td><td>Lets Chrome start <code>buddy_odoo_host.py</code>, for this extension only</td></tr>
+    <tr><td><code>~/.claude/settings.json</code></td><td>The Claude Code hooks</td></tr>
+    <tr><td><code>~/.local/bin/buddy-say</code>, <code>~/.config/<wbr>fish/conf.d/buddy.fish</code></td><td><code>buddy-say</code>, a link to <code>tools/buddy_say.py</code>, and the fish hook that uses it</td></tr>
+    <tr><th colspan="2">Buddy, internal flash</th></tr>
+    <tr><td><code>/config.json</code>, <code>/display.json</code></td><td>Saved settings, and the day brightness</td></tr>
+    <tr><td><code>/wifi.json</code>, <code>/wifi2.json</code></td><td>The two saved networks, passwords in plain text</td></tr>
+    <tr><td><code>/day.json</code></td><td>Today's focus and meeting time, focus sessions, the Bug Hop best score</td></tr>
+    <tr><td><code>/gifs/</code></td><td>Animations, used when no card is in at start</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Commands</h2>
+  <p class="small muted">Run them in the project folder. <code>PORT</code> is <code>/dev/serial/by-id/usb-Espressif_USB_JTAG_serial_debug_unit_*</code>. In a login session older than your <code>dialout</code> membership, wrap USB commands in <code>sg dialout -c '…'</code>.</p>
+  <table class="small">
+    <tr><th style="width: 26%">What you want</th><th>Command</th></tr>
+    <tr><th colspan="2">Build and flash</th></tr>
+    <tr><td>Build the firmware</td><td><code>pio run -e esp32-c6</code></td></tr>
+    <tr><td>Update over Wi-Fi</td><td><code>python3 tools/buddy_flash.py</code> sends the last build; run it again to resume</td></tr>
+    <tr><td>Flash over USB</td><td><code>systemctl --user stop buddy-link</code><br><code>pio run -e esp32-c6 -t upload --upload-port PORT</code><br><code>systemctl --user start buddy-link</code></td></tr>
+    <tr><td>Run the tests</td><td><code>pio test -e native</code> and <code>python3 -m unittest discover -s tools -v</code></td></tr>
+    <tr><th colspan="2">Tools</th></tr>
+    <tr><td>Show a line</td><td><code>buddy-say "TEXT"</code></td></tr>
+    <tr><td>Health, card test</td><td><code>python3 tools/buddy_check.py [--card]</code></td></tr>
+    <tr><td>Screenshot</td><td><code>python3 tools/buddy_shot.py OUT.png [PAGE]</code>. Pages: 0 face, 1 clock, 2 date, 3 weather, 4 moon, 5 stock, 6 GitHub, 7 coin, 8 AbdA, 9 Odoo, 10 PRs, 11 animations, 12 Today, 13 Bug Hop, 14 Claude, 15 Yesterday.</td></tr>
+    <tr><td>Fit a GIF to the screen</td><td><code>python3 tools/buddy_gif.py IN.gif OUT.gif [RRGGBB]</code>, the background colour</td></tr>
+    <tr><td>Send or remove animations</td><td><code>python3 tools/buddy_put.py FILE.gif …</code> or <code>--remove NAME.gif …</code></td></tr>
+    <tr><td>A new GitHub picture</td><td><code>python3 tools/make_avatar.py PICTURE.png</code>, then build and flash</td></tr>
+    <tr><td>Print this guide</td><td><code>python3 docs/guide/make_pdf.py</code></td></tr>
+    <tr><th colspan="2">buddy-link</th></tr>
+    <tr><td>Check or restart it</td><td><code>systemctl --user status buddy-link</code>, or <code>restart</code></td></tr>
+    <tr><td>What it sends</td><td><code>journalctl --user -u buddy-link -f</code></td></tr>
+    <tr><th colspan="2">Over USB, with buddy-link stopped</th></tr>
+    <tr><td>Settings</td><td><code>python3 tools/mb_serial.py PORT get</code>; <code>--show-key</code> adds <code>stock_key</code><br><code>python3 tools/mb_serial.py PORT set pages.moon=true</code>, or <code>set @FILE.json</code><br><code>python3 tools/mb_serial.py PORT defaults</code> drops them; Wi-Fi and brightness stay</td></tr>
+    <tr><td>Wi-Fi</td><td><code>python3 tools/mb_serial.py PORT wifi</code> asks for the first network. For the second, <code>set @FILE.json</code> with <code>{"wifi2":{"ssid":"…","password":"…"}}</code> in the file; delete the file after.</td></tr>
+    <tr><td>The Buddy's log</td><td><code>python3 tools/mb_serial.py PORT monitor</code></td></tr>
+    <tr><td>Read a crash dump</td><td><code>~/.platformio/penv/bin/esptool --port PORT read-flash 0x3F0000 0x10000 core.bin</code><br><code>~/.platformio/penv/bin/esp-coredump --chip esp32c6 info_corefile --gdb ~/.platformio/packages/tool-riscv32-esp-elf-gdb/bin/riscv32-esp-elf-gdb --core core.bin --core-format raw .pio/build/esp32-c6/firmware.elf</code>, with the ELF of the build that crashed</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>The Wi-Fi link</h2>
+  <p class="lede">One UDP packet per message to port 4747 on the Buddy, and one back. A packet the Buddy cannot open, or refuses, gets no answer.</p>
+  <table class="small">
+    <tr><th style="width: 14%">Message</th><th>What it does</th><th style="width: 36%">Sent by</th></tr>
+    <tr><td><code>{…}</code></td><td>STATE: <code>locked</code>, <code>mic</code>, <code>prs</code>, <code>prs_failing</code>, <code>reviews</code>, <code>changes</code>, <code>prs_merged</code>, <code>prs_reviewed</code>, <code>pr_list</code>, <code>claude</code>, <code>at</code>, <code>sessions</code>, <code>use</code>, <code>use_reset</code>, <code>in</code>, <code>out</code>, <code>yin</code>, <code>yout</code>. Also taken, for tests and screenshots: <code>demo</code>, <code>page</code>, <code>tap</code>, <code>mood</code>, <code>play</code>, <code>timer</code>.</td><td><code>buddy-link</code>, on a change and at least every 60&nbsp;s; forgotten after 3&nbsp;minutes</td></tr>
+    <tr><td><code>P</code></td><td>Ping</td><td><code>buddy-link</code> twice a second; <code>buddy_flash.py</code> and <code>buddy_put.py</code> first</td></tr>
+    <tr><td><code>S</code> text</td><td>Shows the text for 20&nbsp;s, folded to ASCII, in at most 4 lines of 26 characters</td><td><code>buddy-say</code>, which cuts it at 110&nbsp;bytes</td></tr>
+    <tr><td><code>O</code> JSON</td><td>The Odoo summary with the Google meetings, at most 1300&nbsp;bytes</td><td><code>buddy-link</code>, on a change and every 60&nbsp;s</td></tr>
+    <tr><td><code>H</code></td><td>Answers the health report as JSON</td><td><code>buddy_check.py</code>, <code>buddy_flash.py</code></td></tr>
+    <tr><td><code>C</code></td><td>Tests the card: 256&nbsp;KB written, read back and deleted; answers JSON</td><td><code>buddy_check.py --card</code></td></tr>
+    <tr><td><code>G</code> page</td><td>Turns to a page; the page flipping waits 30&nbsp;s</td><td><code>buddy_shot.py</code></td></tr>
+    <tr><td><code>R</code> row</td><td>Answers rows <code>row</code> and <code>row</code> + 1: 1280&nbsp;bytes of RGB565</td><td><code>buddy_shot.py</code></td></tr>
+    <tr><td><code>B</code> size signature</td><td>Starts or resumes a firmware update; answers the byte to go on from</td><td><code>buddy_flash.py</code></td></tr>
+    <tr><td><code>F</code> size name</td><td>Starts an animation upload</td><td><code>buddy_put.py</code></td></tr>
+    <tr><td><code>D</code> offset data</td><td>The next 1024&nbsp;bytes of a <code>B</code> or <code>F</code> transfer</td><td><code>buddy_flash.py</code>, <code>buddy_put.py</code></td></tr>
+    <tr><td><code>X</code> name</td><td>Deletes an animation</td><td><code>buddy_put.py --remove</code></td></tr>
+  </table>
+
+  <h3>Packets</h3>
+  <p>A request is <code>nonce (12 bytes) | message sealed with AES-256-GCM | tag (16 bytes)</code>, at most 1400&nbsp;bytes. The nonce is the laptop's clock in milliseconds (8&nbsp;bytes, big-endian) and 4 random bytes. The answer is sealed under the same nonce with the top bit of its first byte set. It holds <code>ok</code>, the build id (the first 8&nbsp;bytes of the SHA-256 of the firmware's ELF), a status byte (bit 0: the timer runs; 1: animations on the card; 2: join the meeting; 3: lock the laptop) and the answer data.</p>
+
+  <h3>Security</h3>
+  <div class="note">
+    <p><b>The port.</b> The Buddy opens port 4747 once it is on Wi-Fi and holds a link key (64 hex digits, given over USB), and ignores it while the setup hotspot is open.</p>
+    <p><b>Replays.</b> The Buddy takes a packet only when its time stamp is later than the last one taken and within 60&nbsp;s of its own clock. A recorded packet can be played back only within a minute of being sent, and only right after the Buddy restarted.</p>
+    <p style="margin: 0"><b>What the key allows.</b> Every message in the table: fake states and Odoo data, text, animations, screenshots, the health report, and answers that lock the laptop or open a meeting. Firmware also needs the signing key.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Updates</h2>
+  <p class="lede"><code>buddy_flash.py</code> sends the last build over the Wi-Fi link into the app slot that is not running.</p>
+  <h3>Flash layout</h3>
+  <table class="small">
+    <tr><th style="width: 16%">Part</th><th style="width: 14%">Start</th><th style="width: 12%">Size</th><th>Holds</th></tr>
+    <tr><td><code>nvs</code></td><td>0x9000</td><td>20&nbsp;KB</td><td>ESP-IDF's key-value store</td></tr>
+    <tr><td><code>otadata</code></td><td>0xE000</td><td>8&nbsp;KB</td><td>Which app slot starts</td></tr>
+    <tr><td><code>app0</code></td><td>0x10000</td><td>3&nbsp;MB</td><td>Firmware slot 1</td></tr>
+    <tr><td><code>spiffs</code></td><td>0x310000</td><td>896&nbsp;KB</td><td>LittleFS with the files listed under <i>Buddy, internal flash</i></td></tr>
+    <tr><td><code>coredump</code></td><td>0x3F0000</td><td>64&nbsp;KB</td><td>The last crash</td></tr>
+    <tr><td><code>app1</code></td><td>0x400000</td><td>3&nbsp;MB</td><td>Firmware slot 2</td></tr>
+  </table>
+
+  <h3>Signed</h3>
+  <p>The tool signs the image with the private update key, ECDSA P-256 over SHA-256, and opens the update with <code>B</code>, the size and the signature. The Buddy hashes each piece as it writes it. After the last one it checks the signature against <code>UPDATE_KEY</code>, the public half built into the running firmware. A mismatch gets the answer <code>refused</code> and the new slot is dropped. A firmware built without <code>UPDATE_KEY</code> refuses every update.</p>
+
+  <h3>Resumable</h3>
+  <p>The pieces go one at a time, each answered before the next. When they stop for 10&nbsp;s, the Buddy pauses the update and keeps it for 10&nbsp;minutes. The signature is deterministic (RFC 6979), so running the tool again sends the same <code>B</code>, and the Buddy answers with the byte to go on from. The tool itself keeps trying for 10&nbsp;minutes before it gives up.</p>
+
+  <h3>Rollback</h3>
+  <p>After a good signature the Buddy restarts into the new slot, which runs on trial. The first packet it accepts on the link keeps it: its log says <code>link: new firmware kept</code>. Until then, any restart, from a crash or a power cut, brings back the previous firmware. The tool reads the build id from <code>H</code> answers for 90&nbsp;s and ends with "The Buddy runs the new firmware." or "… it is back on the one before." Before it sends anything, it compares build ids and stops if the Buddy already runs this build.</p>
+
+  <h3>USB, the rescue</h3>
+  <p style="margin: 0">A USB flash writes the bootloader, the partition table, a fresh <code>otadata</code> and the firmware into <code>app0</code>, so the Buddy starts that firmware whatever the slots held. LittleFS is left alone: settings and Wi-Fi stay. Use it when the Buddy is off the network, when an update keeps failing, and after a change of <code>LINK_KEY</code> or of the update key. If the firmware crashes before an upload can start, hold BOOT while plugging in the cable: the chip then waits in download mode.</p>
+</section>
+
+<section>
+  <h2>Keys and accounts</h2>
+  <table class="small">
+    <tr><th style="width: 19%">What</th><th style="width: 37%">Where it lives</th><th>Renew or rotate</th></tr>
+    <tr><td>The Wi-Fi link key</td><td>Laptop: <code>~/.config/monitor-buddy/link-key</code>, mode 600 in a 700 folder. Buddy: <code>/keys.dat</code>, written by <code>@MB KEYS</code> over USB only and never sent back. Not in any firmware image.</td><td>With the Buddy on USB: <code>./setup.sh --rotate-keys</code>. It replaces both keys on both sides, and puts the old ones back if the Buddy does not take the new ones.</td></tr>
+    <tr><td>Update signing key, ECDSA P-256</td><td>Private half: <code>~/.config/monitor-buddy/update-key.pem</code>, mode 600 in a 700 folder. Public half: on the Buddy, in <code>/keys.dat</code>.</td><td>The same command: <code>./setup.sh --rotate-keys</code>. A plain <code>./setup.sh</code> never replaces a key.</td></tr>
+    <tr><td>Wi-Fi passwords</td><td>On the Buddy, <code>/wifi.json</code> and <code>/wifi2.json</code></td><td>The setup hotspot for the first network, or <code>mb_serial.py</code> over USB (see Commands)</td></tr>
+    <tr><td>Setup hotspot password, <code>AP_PASS</code></td><td>Default in <code>src/main.cpp</code>, as published in upstream's README; the hotspot screen shows it</td><td>Define <code>AP_PASS</code> in <code>config.h</code> (empty, or 8 to 26 characters), build, flash</td></tr>
+    <tr><td>odoo.com</td><td>Chrome's signed-in session, profile Default</td><td>Sign in to www.odoo.com in Chrome</td></tr>
+    <tr><td>GitHub</td><td><code>gh</code>'s own login, for the pull requests. The Buddy's GitHub page uses the public API without a login, which allows 60 requests an hour per address.</td><td><code>gh auth status</code>, <code>gh auth login</code></td></tr>
+    <tr><td>Google Calendar</td><td>GNOME Online Accounts; <code>buddy_calendar.py</code> reads only the local cache</td><td>GNOME Settings, Online Accounts</td></tr>
+    <tr><td>Finnhub API key, for the stock page</td><td><code>stock_key</code> in the Buddy's <code>/config.json</code>, default <code>STOCKKEY</code> in <code>config.h</code>; both empty now</td><td><code>mb_serial.py PORT set @FILE.json</code> with <code>{"config":{"stock_key":"…"}}</code>. <code>@MB GET</code> returns it in plain text; <code>mb_serial.py get</code> hides it without <code>--show-key</code>.</td></tr>
+  </table>
+  <div class="note" style="margin-top: 10pt">
+    <p style="margin: 0"><b>Physical access.</b> The Buddy has no flash encryption and no secure boot, so a USB cable reads the link key, the Wi-Fi passwords and <code>/config.json</code> straight from the flash, and can give the Buddy other keys. After the Buddy has been out of your hands, rotate the keys and change the Wi-Fi passwords.</p>
+  </div>
+</section>
+
+<section>
+  <h2>When something is wrong</h2>
+  <table class="small">
+    <tr><th style="width: 25%">Symptom</th><th style="width: 35%">Cause</th><th>Fix</th></tr>
+    <tr><td>A Wi-Fi tool says "The Buddy does not answer at …"</td><td>A new address, no Wi-Fi, or a clock more than 60&nbsp;s off, like the Buddy's after a cold power-on until NTP runs</td><td>Plug the Buddy in while <code>buddy-link</code> runs; its journal shows <code>buddy address: …</code>. A clock that is off shows in the Buddy's log as <code>link: old packet dropped</code>.</td></tr>
+    <tr><td>No Odoo page; Today says "Waiting for Odoo"</td><td>The journal line "odoo: …" says which: "nothing from Chrome yet", "no news from Chrome for 30&nbsp;minutes" or "signed out of www.odoo.com"</td><td>Start Chrome and sign in to www.odoo.com; after a change to the extension, reload it in <code>chrome://extensions</code></td></tr>
+    <tr><td>Today says "Laptop out of reach"; no lock faces, PRs or Claude alerts</td><td><code>buddy-link</code> is down, or reaches the Buddy neither by Wi-Fi nor by USB</td><td><code>systemctl --user status buddy-link</code> and its journal. Without <code>gh</code> it crashes and restarts every 10&nbsp;s.</td></tr>
+    <tr><td>Swipes and taps do nothing, and the laptop is gone</td><td>The privacy lock ends only with a STATE that says unlocked</td><td>Unlock the laptop near the Buddy, or restart the Buddy</td></tr>
+    <tr><td>"The Buddy refused the firmware: …"</td><td>The Buddy holds another update key than this laptop (or none), or the image is damaged</td><td><code>./setup.sh --status</code> says whether the Buddy holds this laptop's keys; with the Buddy on USB, <code>./setup.sh</code> gives them to it</td></tr>
+    <tr><td>"… it is back on the one before.", or <code>crash_dump: true</code> from <code>buddy_check.py</code></td><td>The firmware crashed</td><td>Read the crash dump with the ELF of that build (see Commands)</td></tr>
+    <tr><td>The Buddy no longer joins the Wi-Fi</td><td>The saved password is wrong; the Buddy keeps retrying it</td><td>Hold the screen for 2.5&nbsp;s, join <code>Monitor-Buddy-Setup</code>, open <code>http://192.168.4.1</code>. Or <code>mb_serial.py PORT wifi</code>.</td></tr>
+    <tr><td>Black screen, no USB log, MAC <code>00:00:00:00:00:00</code>, esptool <code>Write timeout</code></td><td>BOOT (GPIO9) is stuck down; the chip reads it at start</td><td>Free the button. <code>~/.platformio/penv/bin/esptool --port PORT read-mem 0x6009103C</code>: bit 9 clear means pressed.</td></tr>
+    <tr><td><code>@MB</code> gets no reply; guide pictures come out magenta</td><td>Another program reads the port: <code>buddy-link</code> or a leftover capture script</td><td><code>fuser -v PORT</code> names it; stop it</td></tr>
+    <tr><td>A <code>config.h</code> change does nothing after flashing</td><td>Settings saved on the Buddy win for every key <code>mb_serial.py get</code> lists</td><td><code>mb_serial.py PORT set …</code>, or <code>defaults</code> to drop them</td></tr>
+    <tr><td>Double knocks missed, or greetings without a knock</td><td>The thresholds do not fit how and where you knock</td><td>Before changing a <code>KNOCK_*</code> constant, read <code>last_knocks_g</code> from <code>buddy_check.py</code> (the last 8 knocks in g, newest first) and <code>knock=</code> in the USB status line</td></tr>
+    <tr><td>A meeting shows twice, or a declined one shows</td><td><code>buddy_calendar.py</code> does not tie a moved or renamed occurrence to its series, and merges Odoo and Google copies only on the same name and start</td><td><code>python3 tools/buddy_calendar.py</code> shows what it reads</td></tr>
+    <tr><td>"The Buddy refused FILE: its name, or no room left."</td><td>Not 5 to 40 letters, digits, <code>.</code>, <code>-</code> or <code>_</code> ending in <code>.gif</code>; or no card, and less free room than the file plus 16&nbsp;KB</td><td>Rename it, shrink it with <code>buddy_gif.py</code>, or put a card in</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Rules the Buddy follows</h2>
+  <p class="lede">The face shows the first status below that applies. A held one keeps the face page on screen and stops the page flipping. STATE <code>{"demo": N}</code> forces status N until the next STATE without it; 16 gives status 12 with OPENING THE LINK, 100 the plain face.</p>
+  <table class="small">
+    <tr><th style="width: 7%">No.</th><th style="width: 30%">Caption</th><th>When</th><th style="width: 9%">Held</th></tr>
+    <tr><td>15</td><td>WHAT'S UP? or another greeting</td><td>For 2&nbsp;s after a double knock, then Today for 12&nbsp;s</td><td>yes</td></tr>
+    <tr><td>13</td><td>WHOAAA</td><td>A shake, five jumps of over 0.9&nbsp;g in the pull within 0.8&nbsp;s, until 1.3&nbsp;s after the last jump</td><td>yes</td></tr>
+    <tr><td>14</td><td>REALLY?</td><td>The 2.4&nbsp;s after that, then Today for 12&nbsp;s</td><td>yes</td></tr>
+    <tr><td>1</td><td>none, sleepy eyes</td><td>Within the night hours</td><td>no</td></tr>
+    <tr><td>11</td><td>IN A MEETING m:ss</td><td>The laptop's microphone records</td><td>yes</td></tr>
+    <tr><td>12</td><td>MEETING IN n MIN, MEETING NOW, OPENING THE LINK</td><td>From 5&nbsp;minutes before a meeting until 1&nbsp;minute after its start; a tap opens its link on the laptop</td><td>yes</td></tr>
+    <tr><td>7</td><td>FOCUS m:ss</td><td>The timer runs</td><td>yes</td></tr>
+    <tr><td>8</td><td>FOCUSED m:ss</td><td>15&nbsp;s after the timer stops</td><td>yes</td></tr>
+    <tr><td>2</td><td>LUNCH BREAK</td><td>The laptop is locked, 12:00 to 14:00</td><td>yes</td></tr>
+    <tr><td>3</td><td>AWAY</td><td>The laptop is locked at another time</td><td>yes</td></tr>
+    <tr><td>9</td><td>CLAUDE NEEDS YOU</td><td>A Claude Code session waits, for up to 30&nbsp;minutes</td><td>yes</td></tr>
+    <tr><td>4</td><td>LOG &lt;DAY&gt;'S HOURS</td><td>Monday to Friday, while the previous working day has under half of <code>ODOO_DAY_HOURS</code> (8&nbsp;h) logged</td><td>no</td></tr>
+    <tr><td>5</td><td>CI RED: n</td><td>Open PRs updated in the last 4 days whose last checks failed</td><td>no</td></tr>
+    <tr><td>10</td><td>CLAUDE DONE</td><td>A session finished, for 90&nbsp;s</td><td>no</td></tr>
+    <tr><td>6</td><td>LOCKED IN</td><td>One of your Odoo tasks is in a Development stage</td><td>no</td></tr>
+    <tr><td>0</td><td>none</td><td>Nothing above; taps step through the nine moods</td><td>no</td></tr>
+  </table>
+  <p class="small muted" style="margin-top: 5pt">Night, meetings, the lunch hours and the hours nudge wait until NTP has set the clock.</p>
+
+  <h3>Knocks</h3>
+  <p>A task reads the motion sensor every 3&nbsp;ms and compares each reading with a slowly moving average; the difference, in g, is the jolt. A knock is a jolt between 0.25&nbsp;g and 6&nbsp;g after at least 50&nbsp;ms without one of 0.08&nbsp;g. The first knock of a pair needs 150&nbsp;ms of stillness before it, which typing never gives. The second must come 80 to 700&nbsp;ms after the first. Jolts under a quarter of the first knock are the Buddy rocking on its stand, and do not count. A third knock of at least 60&nbsp;% of the first cancels the pair as typing or handling.</p>
+  <p style="margin: 0">The pair counts 250&nbsp;ms after its last knock, unless a finger touched the screen from 300&nbsp;ms before the first knock on, a jolt of over 6&nbsp;g came in the last second, or a shake is under way. Each knock makes the eyes blink. A counted pair puts away a line from the laptop or an animation; with neither showing, it brings status 15. While the laptop is locked, only the putting away still works.</p>
+</section>

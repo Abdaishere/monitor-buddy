@@ -1,0 +1,59 @@
+name: Simulator
+
+# Builds the firmware for the PC (tools/sim), plays every scenario on the
+# simulated board and compares the screen with the golden pictures to the
+# pixel; then drives the browser installer (web/) against the same simulated
+# firmware over a fake USB port. No hardware, no secrets.
+# See tools/sim/README.md.
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main, sim]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sim-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scenarios:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Tools
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q g++ make cmake curl
+          pip install -q pytest pillow cryptography playwright
+          playwright install --with-deps chromium firefox
+      - name: Libraries the firmware is compiled against
+        uses: actions/cache@v6
+        with:
+          path: tools/sim/.deps
+          key: sim-deps-${{ hashFiles('tools/sim/fetch_deps.sh') }}
+      - name: Build the simulator
+        run: make -C tools/sim -j4 > sim-build.log 2>&1 || (tail -40 sim-build.log; exit 1)
+      - name: Scenarios, without the 24-hour day
+        run: cd tools/sim && python3 -m pytest tests -q -m "not workday"
+      - name: The 24-hour workday, plain and personal
+        run: cd tools/sim && python3 -m pytest tests -q -m workday
+      - name: Browser installer and the app's editor against the simulated firmware
+        run: cd tools/sim && python3 -m pytest tests_web -q
+      - name: The app's editor in Firefox
+        run: cd tools/sim && MBSIM_BROWSER=firefox python3 -m pytest tests_web/test_app.py -q
+      - name: Keep the pictures of what went wrong
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sim-out
+          path: |
+            tools/sim/out
+            sim-build.log
+          retention-days: 14

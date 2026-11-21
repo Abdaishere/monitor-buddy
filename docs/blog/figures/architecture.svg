@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="900" viewBox="0 0 960 900" role="img" aria-labelledby="t d" font-family="Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"><title id="t">How the pieces talk</title><desc id="d">The laptop reads www.odoo.com through a Chrome extension, GitHub through gh, Google Calendar through GNOME&#x27;s calendar cache, plus Claude Code hooks, the screen lock and the microphone. The buddy-link service sends it all to the buddy over Wi-Fi, every packet sealed with AES-256-GCM, with USB as the fallback. The buddy fetches weather, its GitHub profile and the time itself.</desc><rect x="0.5" y="0.5" width="959" height="899" rx="14" fill="#FBF9FA" stroke="#E6DDE3"/><text x="40.0" y="54.0" font-size="27" font-weight="700" fill="#241A22" text-anchor="start">How the pieces talk</text>
+<text x="40.0" y="84.0" font-size="16" font-weight="400" fill="#55464F" text-anchor="start">The laptop tells the buddy what it knows. The public bits, the buddy fetches itself.</text>
+<text x="52.0" y="128.0" font-size="13" font-weight="600" fill="#017E84" text-anchor="start" letter-spacing="1.2">INTERNET, REACHED THROUGH THE LAPTOP</text>
+<rect x="52.0" y="140.0" width="272.0" height="58.0" rx="10" fill="#E8F6F7" stroke="#BFE2E5" stroke-width="1"/>
+<text x="68.0" y="165.0" font-size="16" font-weight="600" fill="#241A22" text-anchor="start">www.odoo.com</text>
+<text x="68.0" y="185.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">hours, tasks, meetings</text>
+<rect x="344.0" y="140.0" width="272.0" height="58.0" rx="10" fill="#E8F6F7" stroke="#BFE2E5" stroke-width="1"/>
+<text x="360.0" y="165.0" font-size="16" font-weight="600" fill="#241A22" text-anchor="start">GitHub</text>
+<text x="360.0" y="185.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">pull requests and checks</text>
+<rect x="636.0" y="140.0" width="272.0" height="58.0" rx="10" fill="#E8F6F7" stroke="#BFE2E5" stroke-width="1"/>
+<text x="652.0" y="165.0" font-size="16" font-weight="600" fill="#241A22" text-anchor="start">Google Calendar</text>
+<text x="652.0" y="185.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">synced to the laptop by GNOME</text>
+<rect x="32.0" y="234.0" width="896.0" height="344.0" rx="16" fill="#F4EDF2" stroke="#E2D4DE" stroke-width="1"/>
+<text x="52.0" y="560.0" font-size="13" font-weight="600" fill="#714B67" text-anchor="start" letter-spacing="1.2">LAPTOP · UBUNTU</text>
+<rect x="44.0" y="270.0" width="872.0" height="160.0" rx="12" fill="none" stroke="#D9C8D4" stroke-width="1"/>
+<line x1="188.0" y1="198.0" x2="188.0" y2="272.8" stroke="#017E84" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M188.0,280.0 L184.3,271.8 L191.7,271.8 Z" fill="#017E84"/>
+<line x1="480.0" y1="198.0" x2="480.0" y2="272.8" stroke="#017E84" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M480.0,280.0 L476.3,271.8 L483.7,271.8 Z" fill="#017E84"/>
+<line x1="772.0" y1="198.0" x2="772.0" y2="272.8" stroke="#017E84" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M772.0,280.0 L768.3,271.8 L775.7,271.8 Z" fill="#017E84"/>
+<rect x="52.0" y="280.0" width="272.0" height="62.0" rx="10" fill="#FFFFFF" stroke="#E6DDE3" stroke-width="1"/>
+<text x="68.0" y="307.0" font-size="16" font-weight="600" fill="#241A22" text-anchor="start">Chrome extension</text>
+<text x="68.0" y="327.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">reads Odoo with my session</text>
+<rect x="344.0" y="280.0" width="272.0" height="62.0" rx="10" fill="#FFFFFF" stroke="#E6DDE3" stroke-width="1"/>
+<text x="360.0" y="307.0" font-size="16" font-weight="600" fill="#241A22" text-anchor="start">gh</text>
+<text x="360.0" y="327.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">PRs, reviews, CI, every 10 min</text>
+<rect x="636.0" y="280.0" width="272.0" height="62.0" rx="10" fill="#FFFFFF" stroke="#E6DDE3" stroke-width="1"/>
+<text x="652.0" y="307.0" font-size="16" font-weight="600" fill="#241A22" text-anchor="start">GNOME calendar cache</text>
+<text x="652.0" y="327.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">read-only, no Google keys</text>
+<rect x="52.0" y="354.0" width="272.0" height="62.0" rx="10" fill="#FFFFFF" stroke="#E6DDE3" stroke-width="1"/>
+<text x="68.0" y="381.0" font-size="16" font-weight="600" fill="#241A22" text-anchor="start">Claude Code hooks</text>
+<text x="68.0" y="401.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">waiting for me, done, usage</text>
+<rect x="344.0" y="354.0" width="272.0" height="62.0" rx="10" fill="#FFFFFF" stroke="#E6DDE3" stroke-width="1"/>
+<text x="360.0" y="381.0" font-size="16" font-weight="600" fill="#241A22" text-anchor="start">Screen lock</text>
+<text x="360.0" y="401.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">logind: locked or not</text>
+<rect x="636.0" y="354.0" width="272.0" height="62.0" rx="10" fill="#FFFFFF" stroke="#E6DDE3" stroke-width="1"/>
+<text x="652.0" y="381.0" font-size="16" font-weight="600" fill="#241A22" text-anchor="start">Microphone</text>
+<text x="652.0" y="401.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">PipeWire: is something recording</text>
+<line x1="480.0" y1="430.0" x2="480.0" y2="466.8" stroke="#714B67" stroke-width="2" stroke-linecap="round"/>
+<path d="M480.0,474.0 L476.3,465.8 L483.7,465.8 Z" fill="#714B67"/>
+<text x="494.0" y="457.0" font-size="14" font-weight="600" fill="#714B67" text-anchor="start">all six, every 5 seconds</text>
+<rect x="300.0" y="474.0" width="360.0" height="60.0" rx="10" fill="#714B67"/>
+<text x="480.0" y="500.0" font-size="17" font-weight="700" fill="#FFFFFF" text-anchor="middle">buddy-link</text>
+<text x="480.0" y="520.0" font-size="14" font-weight="400" fill="#EADFE6" text-anchor="middle">a small Python service</text>
+<line x1="440.0" y1="543.6" x2="440.0" y2="652.4" stroke="#714B67" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M440.0,662.0 L435.1,651.0 L444.9,651.0 Z" fill="#714B67"/>
+<path d="M440.0,534.0 L444.9,545.0 L435.1,545.0 Z" fill="#714B67"/>
+<line x1="380.0" y1="541.2" x2="380.0" y2="654.8" stroke="#9A8A96" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M380.0,662.0 L376.3,653.8 L383.7,653.8 Z" fill="#9A8A96"/>
+<path d="M380.0,534.0 L383.7,542.2 L376.3,542.2 Z" fill="#9A8A96"/>
+<text x="460.0" y="604.0" font-size="15" font-weight="700" fill="#241A22" text-anchor="start">Wi-Fi, UDP: every packet sealed with AES-256-GCM</text>
+<text x="460.0" y="624.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">the buddy only answers; it never calls the laptop</text>
+<text x="460.0" y="644.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">buddy-say, signed updates and animations use it too</text>
+<text x="362.0" y="624.0" font-size="14" font-weight="600" fill="#55464F" text-anchor="end">USB: fallback, settings, rescue</text>
+<rect x="32.0" y="662.0" width="568.0" height="208.0" rx="16" fill="#1C171E"/>
+<text x="52.0" y="694.0" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="start">Monitor Buddy</text>
+<text x="52.0" y="716.0" font-size="14" font-weight="400" fill="#CBC0C8" text-anchor="start">Waveshare ESP32-C6-Touch-LCD-1.47 · Wi-Fi · 8 MB flash</text>
+<rect x="52.0" y="734.0" width="256.0" height="54.0" rx="8" fill="#2D2630"/>
+<text x="68.0" y="757.0" font-size="16" font-weight="600" fill="#FFFFFF" text-anchor="start">Touch screen</text>
+<text x="68.0" y="777.0" font-size="14" font-weight="400" fill="#CBC0C8" text-anchor="start">1.47 in, 320 × 172</text>
+<rect x="324.0" y="734.0" width="256.0" height="54.0" rx="8" fill="#2D2630"/>
+<text x="340.0" y="757.0" font-size="16" font-weight="600" fill="#FFFFFF" text-anchor="start">Motion sensor</text>
+<text x="340.0" y="777.0" font-size="14" font-weight="400" fill="#CBC0C8" text-anchor="start">knocks, shakes, lying flat</text>
+<rect x="52.0" y="798.0" width="256.0" height="54.0" rx="8" fill="#2D2630"/>
+<text x="68.0" y="821.0" font-size="16" font-weight="600" fill="#FFFFFF" text-anchor="start">microSD card</text>
+<text x="68.0" y="841.0" font-size="14" font-weight="400" fill="#CBC0C8" text-anchor="start">the animations</text>
+<rect x="324.0" y="798.0" width="256.0" height="54.0" rx="8" fill="#2D2630"/>
+<text x="340.0" y="821.0" font-size="16" font-weight="600" fill="#FFFFFF" text-anchor="start">Two firmware slots</text>
+<text x="340.0" y="841.0" font-size="14" font-weight="400" fill="#CBC0C8" text-anchor="start">a bad update rolls back</text>
+<text x="640.0" y="672.0" font-size="13" font-weight="600" fill="#017E84" text-anchor="start" letter-spacing="1.2">INTERNET, REACHED BY THE BUDDY</text>
+<rect x="640.0" y="686.0" width="288.0" height="52.0" rx="10" fill="#E8F6F7" stroke="#BFE2E5" stroke-width="1"/>
+<text x="656.0" y="708.0" font-size="16" font-weight="600" fill="#241A22" text-anchor="start">Open-Meteo</text>
+<text x="656.0" y="728.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">weather, every 15 min</text>
+<line x1="600.0" y1="712.0" x2="632.8" y2="712.0" stroke="#017E84" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M640.0,712.0 L631.8,715.7 L631.8,708.3 Z" fill="#017E84"/>
+<rect x="640.0" y="748.0" width="288.0" height="52.0" rx="10" fill="#E8F6F7" stroke="#BFE2E5" stroke-width="1"/>
+<text x="656.0" y="770.0" font-size="16" font-weight="600" fill="#241A22" text-anchor="start">GitHub profile</text>
+<text x="656.0" y="790.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">streak and stars, every 30 min</text>
+<line x1="600.0" y1="774.0" x2="632.8" y2="774.0" stroke="#017E84" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M640.0,774.0 L631.8,777.7 L631.8,770.3 Z" fill="#017E84"/>
+<rect x="640.0" y="810.0" width="288.0" height="52.0" rx="10" fill="#E8F6F7" stroke="#BFE2E5" stroke-width="1"/>
+<text x="656.0" y="832.0" font-size="16" font-weight="600" fill="#241A22" text-anchor="start">NTP</text>
+<text x="656.0" y="852.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">the time</text>
+<line x1="600.0" y1="836.0" x2="632.8" y2="836.0" stroke="#017E84" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M640.0,836.0 L631.8,839.7 L631.8,832.3 Z" fill="#017E84"/></svg>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { width: 280px; margin: 0; padding: 12px; font: 14px/1.4 system-ui, sans-serif; color: #1b1b1f; background: #f5f4f0; }
+  h1 { font-size: 15px; margin: 0 0 8px; }
+  form { display: flex; gap: 6px; }
+  input { flex: 1; min-width: 0; padding: 7px 9px; border: 1px solid #dcdad2; border-radius: 8px; font: inherit; }
+  button { border: 0; border-radius: 8px; padding: 7px 11px; font: inherit; cursor: pointer; }
+  #go { background: #0f6e56; color: #fff; font-weight: 600; }
+  #quick { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+  #quick button { background: #fff; border: 1px solid #dcdad2; padding: 4px 9px; border-radius: 999px; }
+  #result { min-height: 1.4em; margin: 8px 0 0; color: #5f5e5a; }
+  #result.bad { color: #b3261e; }
+</style>
+</head>
+<body>
+<h1>Show a line on the Buddy</h1>
+<form id="form"><input id="text" maxlength="100" placeholder="Tea is ready" autofocus><button id="go">Show</button></form>
+<div id="quick"></div>
+<p id="result" role="status"></p>
+<script src="popup.js"></script>
+</body>
+</html>

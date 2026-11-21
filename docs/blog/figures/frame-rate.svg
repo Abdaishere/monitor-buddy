@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="652" viewBox="0 0 900 652" role="img" aria-labelledby="t d" font-family="Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"><title id="t">Frames per second, before and after</title><desc id="d">Frames per second on the board, lowest to highest reading. Start: the whole frame sent every time: 11 to 12; Wi-Fi upkeep every 500 ms, not every frame: 14; Only changed rows sent, frames paced: 29 to 30; Knock watch added, sensor bus at 100 kHz: 26 to 28; Sensor bus at 400 kHz: 29; Animation page, GIFs from the SD card: 21 to 23; Start: 13 to 16; Its own partial flush: only the rows that move: 29 to 40</desc><rect x="0.5" y="0.5" width="899" height="651" rx="14" fill="#FBF9FA" stroke="#E6DDE3"/><text x="40.0" y="54.0" font-size="27" font-weight="700" fill="#241A22" text-anchor="start">Frames per second, before and after</text>
+<text x="40.0" y="84.0" font-size="16" font-weight="400" fill="#55464F" text-anchor="start">What each change bought, measured on the board</text>
+<rect x="40.0" y="112.0" width="14.0" height="14.0" rx="3" fill="#7A3A6C"/>
+<text x="62.0" y="124.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">today&#x27;s firmware</text>
+<rect x="181.3" y="112.0" width="14.0" height="14.0" rx="3" fill="#BDB1BA"/>
+<text x="203.3" y="124.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">earlier builds</text>
+<rect x="296.7" y="112.0" width="8.0" height="14.0" rx="2" fill="#BDB1BA"/>
+<rect x="306.7" y="112.0" width="18.0" height="14.0" rx="3" fill="#E0D8DE"/>
+<text x="332.7" y="124.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">lighter tip: the spread of the readings</text>
+<line x1="40.0" y1="140.0" x2="40.0" y2="156.0" stroke="#9A8A96" stroke-width="1.2" stroke-linecap="round"/>
+<text x="52.0" y="153.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">the cap: frames are paced at one every 33 ms</text>
+<text x="40.0" y="190.0" font-size="15" font-weight="700" fill="#241A22" text-anchor="start">Normal pages: face, clock, weather, AbdA, animations</text>
+<text x="40.0" y="466.0" font-size="15" font-weight="700" fill="#241A22" text-anchor="start">Bug Hop, the game</text>
+<line x1="412.0" y1="204.0" x2="412.0" y2="444.0" stroke="#CFC4CC" stroke-width="1" stroke-linecap="round"/>
+<line x1="412.0" y1="480.0" x2="412.0" y2="560.0" stroke="#CFC4CC" stroke-width="1" stroke-linecap="round"/>
+<text x="412.0" y="582.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="middle">0</text>
+<line x1="512.0" y1="204.0" x2="512.0" y2="444.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<line x1="512.0" y1="480.0" x2="512.0" y2="560.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="512.0" y="582.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="middle">10</text>
+<line x1="612.0" y1="204.0" x2="612.0" y2="444.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<line x1="612.0" y1="480.0" x2="612.0" y2="560.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="612.0" y="582.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="middle">20</text>
+<line x1="712.0" y1="204.0" x2="712.0" y2="444.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<line x1="712.0" y1="480.0" x2="712.0" y2="560.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="712.0" y="582.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="middle">30</text>
+<line x1="812.0" y1="204.0" x2="812.0" y2="444.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<line x1="812.0" y1="480.0" x2="812.0" y2="560.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="812.0" y="582.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="middle">40</text>
+<text x="812.0" y="604.0" font-size="14" font-weight="400" fill="#6F6069" text-anchor="end">frames per second</text>
+<line x1="712.0" y1="204.0" x2="712.0" y2="444.0" stroke="#9A8A96" stroke-width="1.2" stroke-linecap="round"/>
+<line x1="712.0" y1="480.0" x2="712.0" y2="560.0" stroke="#9A8A96" stroke-width="1.2" stroke-linecap="round"/>
+<text x="398.0" y="229.0" font-size="15" font-weight="400" fill="#55464F" text-anchor="end">Start: the whole frame sent every time</text>
+<path d="M412.0,214.0 H522.0 Q522.0,214.0 522.0,214.0 V234.0 Q522.0,234.0 522.0,234.0 H412.0 Z" fill="#BDB1BA"><title>Start: the whole frame sent every time: 11–12 fps</title></path>
+<path d="M524.0,214.0 H528.0 Q532.0,214.0 532.0,218.0 V230.0 Q532.0,234.0 528.0,234.0 H524.0 Z" fill="#E0D8DE"><title>Start: the whole frame sent every time: 11–12 fps</title></path>
+<text x="540.0" y="229.0" font-size="15" font-weight="400" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">11–12</text>
+<text x="398.0" y="269.0" font-size="15" font-weight="400" fill="#55464F" text-anchor="end">Wi-Fi upkeep every 500 ms, not every frame</text>
+<path d="M412.0,254.0 H548.0 Q552.0,254.0 552.0,258.0 V270.0 Q552.0,274.0 548.0,274.0 H412.0 Z" fill="#BDB1BA"><title>Wi-Fi upkeep every 500 ms, not every frame: 14 fps</title></path>
+<text x="560.0" y="269.0" font-size="15" font-weight="400" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">14</text>
+<text x="398.0" y="309.0" font-size="15" font-weight="400" fill="#55464F" text-anchor="end">Only changed rows sent, frames paced</text>
+<path d="M412.0,294.0 H702.0 Q702.0,294.0 702.0,294.0 V314.0 Q702.0,314.0 702.0,314.0 H412.0 Z" fill="#BDB1BA"><title>Only changed rows sent, frames paced: 29–30 fps</title></path>
+<path d="M704.0,294.0 H708.0 Q712.0,294.0 712.0,298.0 V310.0 Q712.0,314.0 708.0,314.0 H704.0 Z" fill="#E0D8DE"><title>Only changed rows sent, frames paced: 29–30 fps</title></path>
+<text x="720.0" y="309.0" font-size="15" font-weight="400" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">29–30</text>
+<text x="398.0" y="349.0" font-size="15" font-weight="400" fill="#55464F" text-anchor="end">Knock watch added, sensor bus at 100 kHz</text>
+<path d="M412.0,334.0 H672.0 Q672.0,334.0 672.0,334.0 V354.0 Q672.0,354.0 672.0,354.0 H412.0 Z" fill="#BDB1BA"><title>Knock watch added, sensor bus at 100 kHz: 26–28 fps</title></path>
+<path d="M674.0,334.0 H688.0 Q692.0,334.0 692.0,338.0 V350.0 Q692.0,354.0 688.0,354.0 H674.0 Z" fill="#E0D8DE"><title>Knock watch added, sensor bus at 100 kHz: 26–28 fps</title></path>
+<text x="700.0" y="349.0" font-size="15" font-weight="400" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">26–28</text>
+<text x="398.0" y="389.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="end">Sensor bus at 400 kHz</text>
+<path d="M412.0,374.0 H698.0 Q702.0,374.0 702.0,378.0 V390.0 Q702.0,394.0 698.0,394.0 H412.0 Z" fill="#7A3A6C"><title>Sensor bus at 400 kHz: 29 fps</title></path>
+<text x="710.0" y="389.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">29</text>
+<text x="398.0" y="429.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="end">Animation page, GIFs from the SD card</text>
+<path d="M412.0,414.0 H622.0 Q622.0,414.0 622.0,414.0 V434.0 Q622.0,434.0 622.0,434.0 H412.0 Z" fill="#7A3A6C"><title>Animation page, GIFs from the SD card: 21–23 fps</title></path>
+<path d="M624.0,414.0 H638.0 Q642.0,414.0 642.0,418.0 V430.0 Q642.0,434.0 638.0,434.0 H624.0 Z" fill="#CDB3C5"><title>Animation page, GIFs from the SD card: 21–23 fps</title></path>
+<text x="650.0" y="429.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">21–23</text>
+<text x="398.0" y="505.0" font-size="15" font-weight="400" fill="#55464F" text-anchor="end">Start</text>
+<path d="M412.0,490.0 H542.0 Q542.0,490.0 542.0,490.0 V510.0 Q542.0,510.0 542.0,510.0 H412.0 Z" fill="#BDB1BA"><title>Start: 13–16 fps</title></path>
+<path d="M544.0,490.0 H568.0 Q572.0,490.0 572.0,494.0 V506.0 Q572.0,510.0 568.0,510.0 H544.0 Z" fill="#E0D8DE"><title>Start: 13–16 fps</title></path>
+<text x="580.0" y="505.0" font-size="15" font-weight="400" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">13–16</text>
+<text x="398.0" y="545.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="end">Its own partial flush: only the rows that move</text>
+<path d="M412.0,530.0 H702.0 Q702.0,530.0 702.0,530.0 V550.0 Q702.0,550.0 702.0,550.0 H412.0 Z" fill="#7A3A6C"><title>Its own partial flush: only the rows that move: 29–40 fps</title></path>
+<path d="M704.0,530.0 H808.0 Q812.0,530.0 812.0,534.0 V546.0 Q812.0,550.0 808.0,550.0 H704.0 Z" fill="#CDB3C5"><title>Its own partial flush: only the rows that move: 29–40 fps</title></path>
+<text x="820.0" y="545.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">29–40</text>
+<text x="40.0" y="630.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="start">Measured on the real board, 18–19 November 2026. The game runs unpaced, so it can pass the cap.</text></svg>

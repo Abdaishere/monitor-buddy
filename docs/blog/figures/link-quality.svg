@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="700" viewBox="0 0 900 700" role="img" aria-labelledby="t d" font-family="Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"><title id="t">The Wi-Fi link, on the desk and in a weak spot</title><desc id="d">Wi-Fi link, 40 sealed pings per test. Pings lost: on the desk 0 of 40; weak spot on a charger 8 of 40; same spot, one run 13 of 20. Round trip: desk median 4 to 60 ms; weak spot median 187 ms, slowest 762 ms. Firmware updates in the weak spot broke off at 67 to 135 KB of 1.9 MB.</desc><rect x="0.5" y="0.5" width="899" height="699" rx="14" fill="#FBF9FA" stroke="#E6DDE3"/><text x="40.0" y="54.0" font-size="27" font-weight="700" fill="#241A22" text-anchor="start">The Wi-Fi link, on the desk and in a weak spot</text>
+<text x="40.0" y="84.0" font-size="16" font-weight="400" fill="#55464F" text-anchor="start">40 sealed pings per test</text>
+<rect x="40.0" y="112.0" width="14.0" height="14.0" rx="3" fill="#1F9AA3"/>
+<text x="62.0" y="124.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">on the desk</text>
+<rect x="151.4" y="112.0" width="14.0" height="14.0" rx="3" fill="#7A3A6C"/>
+<text x="173.4" y="124.0" font-size="14" font-weight="400" fill="#55464F" text-anchor="start">weak spot, on a charger</text>
+<text x="40.0" y="170.0" font-size="16" font-weight="700" fill="#241A22" text-anchor="start">Pings lost</text>
+<line x1="330.0" y1="186.0" x2="330.0" y2="300.0" stroke="#CFC4CC" stroke-width="1" stroke-linecap="round"/>
+<text x="330.0" y="320.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="middle">0 %</text>
+<line x1="447.5" y1="186.0" x2="447.5" y2="300.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="447.5" y="320.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="middle">25 %</text>
+<line x1="565.0" y1="186.0" x2="565.0" y2="300.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="565.0" y="320.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="middle">50 %</text>
+<line x1="682.5" y1="186.0" x2="682.5" y2="300.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="682.5" y="320.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="middle">75 %</text>
+<line x1="800.0" y1="186.0" x2="800.0" y2="300.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="800.0" y="320.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="middle">100 %</text>
+<text x="316.0" y="210.0" font-size="15" font-weight="400" fill="#241A22" text-anchor="end">On the desk</text>
+<text x="338.0" y="210.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">0 of 40</text>
+<text x="316.0" y="248.0" font-size="15" font-weight="400" fill="#241A22" text-anchor="end">Weak spot</text>
+<path d="M330.0,233.0 H420.0 Q424.0,233.0 424.0,237.0 V249.0 Q424.0,253.0 420.0,253.0 H330.0 Z" fill="#7A3A6C"><title>Weak spot: 8 of 40</title></path>
+<text x="432.0" y="248.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">8 of 40</text>
+<text x="316.0" y="286.0" font-size="15" font-weight="400" fill="#241A22" text-anchor="end">Same spot, worst run</text>
+<path d="M330.0,271.0 H631.5 Q635.5,271.0 635.5,275.0 V287.0 Q635.5,291.0 631.5,291.0 H330.0 Z" fill="#7A3A6C"><title>Same spot, worst run: 13 of 20</title></path>
+<text x="643.5" y="286.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">13 of 20</text>
+<text x="40.0" y="360.0" font-size="16" font-weight="700" fill="#241A22" text-anchor="start">Round trip</text>
+<line x1="330.0" y1="376.0" x2="330.0" y2="490.0" stroke="#CFC4CC" stroke-width="1" stroke-linecap="round"/>
+<text x="330.0" y="510.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="middle">0 ms</text>
+<line x1="447.5" y1="376.0" x2="447.5" y2="490.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="447.5" y="510.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="middle">200 ms</text>
+<line x1="565.0" y1="376.0" x2="565.0" y2="490.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="565.0" y="510.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="middle">400 ms</text>
+<line x1="682.5" y1="376.0" x2="682.5" y2="490.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="682.5" y="510.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="middle">600 ms</text>
+<line x1="800.0" y1="376.0" x2="800.0" y2="490.0" stroke="#ECE5EA" stroke-width="1" stroke-linecap="round"/>
+<text x="800.0" y="510.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="middle">800 ms</text>
+<text x="316.0" y="400.0" font-size="15" font-weight="400" fill="#241A22" text-anchor="end">On the desk, median</text>
+<path d="M330.0,385.0 H332.4 Q332.4,385.0 332.4,385.0 V405.0 Q332.4,405.0 332.4,405.0 H330.0 Z" fill="#1F9AA3"><title>On the desk, median: 4–60 ms</title></path>
+<path d="M334.4,385.0 H361.2 Q365.2,385.0 365.2,389.0 V401.0 Q365.2,405.0 361.2,405.0 H334.4 Z" fill="#A9DCE0"><title>On the desk, median: 4–60 ms</title></path>
+<text x="373.2" y="400.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">4–60 ms</text>
+<text x="316.0" y="438.0" font-size="15" font-weight="400" fill="#241A22" text-anchor="end">Weak spot, median</text>
+<path d="M330.0,423.0 H435.9 Q439.9,423.0 439.9,427.0 V439.0 Q439.9,443.0 435.9,443.0 H330.0 Z" fill="#7A3A6C"><title>Weak spot, median: 187 ms</title></path>
+<text x="447.9" y="438.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">187 ms</text>
+<text x="316.0" y="476.0" font-size="15" font-weight="400" fill="#241A22" text-anchor="end">Weak spot, slowest</text>
+<path d="M330.0,461.0 H773.7 Q777.7,461.0 777.7,465.0 V477.0 Q777.7,481.0 773.7,481.0 H330.0 Z" fill="#7A3A6C"><title>Weak spot, slowest: 762 ms</title></path>
+<text x="785.7" y="476.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start" stroke="#FBF9FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">762 ms</text>
+<text x="40.0" y="550.0" font-size="16" font-weight="700" fill="#241A22" text-anchor="start">Where firmware updates broke off in the weak spot</text>
+<text x="316.0" y="611.0" font-size="15" font-weight="400" fill="#241A22" text-anchor="end">The 1.9 MB image</text>
+<rect x="330.0" y="600.0" width="470.0" height="12.0" rx="6" fill="#ECE5EA"/>
+<rect x="346.6" y="597.0" width="16.8" height="18" rx="4" fill="#7A3A6C"><title>broke off between 67 and 135 KB</title></rect>
+<text x="346.6" y="586.0" font-size="15" font-weight="600" fill="#241A22" text-anchor="start">broke off at 67–135 KB, three times</text>
+<text x="330.0" y="636.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="middle">0</text>
+<text x="800.0" y="636.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="middle">1.9 MB</text>
+<text x="40.0" y="678.0" font-size="13" font-weight="400" fill="#6F6069" text-anchor="start">Measured on the real board, 18–19 November 2026. Each break cost the whole transfer until updates could resume.</text></svg>
