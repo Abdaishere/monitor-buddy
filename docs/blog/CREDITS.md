@@ -1,25 +1,28 @@
 # Credits
 
-Monitor Buddy is a fork. Most of what makes it nice was there before me, so thank you to IdefixRC and everyone listed here. The short legal version is in [NOTICE](../../NOTICE) and [LICENSE](../../LICENSE).
+Monitor Buddy is a fork. Most of what makes it nice was there before me, so thank you to IdefixRC and everyone listed here. The short legal version is in [NOTICE](../../NOTICE) and [LICENSE](../../LICENSE); the licence texts of the libraries are in [THIRD-PARTY-LICENSES.md](../../THIRD-PARTY-LICENSES.md).
 
 ## The project it started from
 
 - **[Monitor-Buddy](https://github.com/IdefixRC/Monitor-Buddy)** by IdefixRC and its contributors, MIT licence (Copyright (c) 2026 IdefixRC). The base firmware, the settings engine, the web flasher and the printed holder ([MakerWorld model](https://makerworld.com/en/models/3241960-monitor-buddy)). The MIT licence text must travel with any copy of the code.
 - **Upstream contributors**: [AmyJoT](https://github.com/AmyJoT) (brightness swipe, a sturdier touch read, the first network changes that keep the screen responsive) and [Killo1988](https://github.com/Killo1988) (Coinbase chart, 12-hour clock, night mode and a batch of fixes).
 - **[Tiny ESP DeskBuddy](https://schematik.io/)** from schematik.io, the idea upstream started from.
-- **[DESKBUDDY-1.0](https://github.com/EDISON-SCIENCE-CORNER/DESKBUDDY-1.0)** by Edison Science Corner, the face designs upstream builds on.
+- **[DESKBUDDY-1.0](https://github.com/EDISON-SCIENCE-CORNER/DESKBUDDY-1.0)** by Edison Science Corner, where additional face designs of the original came from.
 
 ## Firmware libraries
 
 | Library | By | Licence |
 |---|---|---|
-| [GFX Library for Arduino](https://github.com/moononournation/Arduino_GFX) (Arduino_GFX) | moononournation | see its repository |
+| [GFX Library for Arduino](https://github.com/moononournation/Arduino_GFX) (Arduino_GFX) | moononournation | BSD (the Adafruit GFX licence) |
 | [ArduinoJson](https://arduinojson.org/) | Benoît Blanchon | MIT |
-| [U8g2](https://github.com/olikraus/u8g2) and its fonts | olikraus | BSD-2-Clause for the code; the fonts carry their own licences, listed by U8g2 |
+| [U8g2](https://github.com/olikraus/u8g2) and its fonts | olikraus | BSD-2-Clause for the code. Fonts used: Helvetica Bold 10, 12 and 14 (X11 fonts, notice of Adobe Systems and Digital Equipment Corporation) and Logisoso 16, 22, 28 and 38 by Mathieu Gabiot (SIL OFL 1.1) |
 | [AnimatedGIF](https://github.com/bitbank2/AnimatedGIF) | Larry Bank, BitBank Software | Apache-2.0 |
 | [AyresWiFiManager](https://github.com/ayresnet/AyresWiFiManager), [IdefixRC fork](https://github.com/IdefixRC/AyresWiFiManager) | Daniel Salgado (AyresNet); fork by IdefixRC | MIT |
 | [Unity](https://github.com/ThrowTheSwitch/Unity) (unit tests) | Mike Karlesky, Mark VanderVoord, Greg Williams | MIT |
-| Arduino core for ESP32 and ESP-IDF, through the [pioarduino](https://github.com/pioarduino) platform | Espressif and the pioarduino community | see their repositories |
+| Arduino core for ESP32 and ESP-IDF, through the [pioarduino](https://github.com/pioarduino) platform | Espressif and the pioarduino community | Arduino core LGPL-2.1, ESP-IDF Apache-2.0 |
+| [esp_littlefs](https://github.com/joltwallet/esp_littlefs) and [littlefs](https://github.com/littlefs-project/littlefs), the file system on the board | Brian Pugh; the littlefs authors | MIT; BSD-3-Clause |
+
+The full licence texts are in [THIRD-PARTY-LICENSES.md](../../THIRD-PARTY-LICENSES.md).
 
 ## Laptop tools
 
@@ -42,8 +45,10 @@ The live preview in the app (`tools/app/sim`) is the firmware and the libraries 
 
 ## Services
 
-- **[Open-Meteo](https://open-meteo.com/)**: weather. Its API data is licensed CC BY 4.0, so a published build credits Open-Meteo.
+- **[Open-Meteo](https://open-meteo.com/)**: weather and the installer's city search. Its API data is licensed CC BY 4.0, so a published build credits Open-Meteo.
 - **GitHub**: the public profile and contributions page the Buddy reads, and the API behind `gh`.
+- **[Finnhub](https://finnhub.io/)**: stock quotes, with your own free key.
+- **[Coinbase](https://www.coinbase.com/)**: coin prices and the 24-hour chart (its public API).
 - **NTP**: pool.ntp.org and time.cloudflare.com.
 
 ## Animations

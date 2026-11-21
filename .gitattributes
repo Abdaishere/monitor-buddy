@@ -1,0 +1,2 @@
+# Vendored files stay byte for byte as their makers published them.
+web/vendor/** -text

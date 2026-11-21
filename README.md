@@ -23,7 +23,7 @@ This is a fork of [Monitor-Buddy](https://github.com/IdefixRC/Monitor-Buddy) by 
 - **The board:** Waveshare ESP32-C6-Touch-LCD-1.47, the **touch** version (8 MB flash, about US$15, e.g. from [Waveshare](https://www.waveshare.com/esp32-c6-touch-lcd-1.47.htm?sku=31203)). The version without touch is smaller and does not work.
 - **A USB-C cable that carries data** (some charging cables don't).
 - **A computer with Chrome or Edge**, once, for the install. Windows, macOS, Linux and ChromeOS all work.
-- **The printed dock** (optional, two parts): print settings and assembly in [docs/blog/MAKERWORLD.md](docs/blog/MAKERWORLD.md). The model files are published on MakerWorld only (see [Licence](#licence)).
+- **The printed dock** (optional, two parts): print settings and assembly in [docs/blog/MAKERWORLD.md](docs/blog/MAKERWORLD.md). The model files go on MakerWorld only, as a remix of the original; the link will be added here when the remix is listed (see [Licence](#licence)).
 - Optional: a microSD card for the animations, and a Linux computer for the workday features.
 
 ## Set up
@@ -193,21 +193,21 @@ Settings and keys live on the board, not in the build: `config/config.h` (copy i
 ## Licence
 
 - **Code** (firmware, tools, web flasher): MIT, see [LICENSE](LICENSE). Copyright IdefixRC for the original, Abdallah El Belkasy for this fork's changes.
-- **3D models**: not in this repository. The dock's head is built on IdefixRC's holder, which is under the MakerWorld Exclusive License, so the dock is published on MakerWorld only, as a remix of the [original model](https://makerworld.com/en/models/3241960-monitor-buddy).
+- **3D models**: not in this repository. The dock's head is built on IdefixRC's holder, which is under the MakerWorld Exclusive License, so the dock is published on MakerWorld only (link to follow), as a remix of the [original model](https://makerworld.com/en/models/3241960-monitor-buddy).
 - **Animations** in `sdcard/gifs`: drawn by `tools/buddy_art.py`, MIT like the code.
 - **Photos, renders and diagrams** in `docs/blog`: by Abdallah El Belkasy.
 
 ## Credits
 
 - **The original**: [Monitor-Buddy](https://github.com/IdefixRC/Monitor-Buddy) by [IdefixRC](https://github.com/IdefixRC) and its contributors [AmyJoT](https://github.com/AmyJoT) and [Killo1988](https://github.com/Killo1988), MIT licence. The base firmware, the settings engine, the web flasher and the [printed holder](https://makerworld.com/en/models/3241960-monitor-buddy).
-- **Where the original came from**: the Tiny ESP DeskBuddy idea from [schematik.io](https://schematik.io/) and the face designs of [DESKBUDDY-1.0](https://github.com/EDISON-SCIENCE-CORNER/DESKBUDDY-1.0) by Edison Science Corner.
+- **Where the original came from**: the Tiny ESP DeskBuddy idea from [schematik.io](https://schematik.io/) and additional face designs from [DESKBUDDY-1.0](https://github.com/EDISON-SCIENCE-CORNER/DESKBUDDY-1.0) by Edison Science Corner.
 - **Firmware libraries**: [Arduino_GFX](https://github.com/moononournation/Arduino_GFX), [ArduinoJson](https://arduinojson.org/), [U8g2](https://github.com/olikraus/u8g2) and its fonts, [AnimatedGIF](https://github.com/bitbank2/AnimatedGIF), [AyresWiFiManager](https://github.com/ayresnet/AyresWiFiManager) in the [IdefixRC fork](https://github.com/IdefixRC/AyresWiFiManager), [Unity](https://github.com/ThrowTheSwitch/Unity), and the Arduino core for ESP32 through [pioarduino](https://github.com/pioarduino).
 - **Browser installer**: [esptool-js](https://github.com/espressif/esptool-js) by Espressif (Apache-2.0) and [posix_tz_db](https://github.com/nayarsystems/posix_tz_db) by Nayar Systems (MIT).
 - **Laptop tools**: [cryptography](https://cryptography.io/), [python-dateutil](https://github.com/dateutil/dateutil), [Pillow](https://python-pillow.org/), [pyserial](https://github.com/pyserial/pyserial) and the [GitHub CLI](https://cli.github.com/).
-- **Data**: weather by [Open-Meteo](https://open-meteo.com/) (CC BY 4.0).
+- **Data**: weather and the city search by [Open-Meteo](https://open-meteo.com/) (CC BY 4.0), stock quotes by [Finnhub](https://finnhub.io/), coin prices by [Coinbase](https://www.coinbase.com/).
 - **Renders**: lighting maps and the wood texture from [Poly Haven](https://polyhaven.com) (CC0).
 
-Every licence, and what each part is used for, is in [docs/blog/CREDITS.md](docs/blog/CREDITS.md).
+What each part is used for is in [docs/blog/CREDITS.md](docs/blog/CREDITS.md); the licence texts are in [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md).
 
 ## The original project
 

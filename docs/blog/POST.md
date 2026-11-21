@@ -58,7 +58,7 @@ A few favourites:
 
 Put together, a day looks like this:
 
-![An example working day as a timeline: night until 07:00; at the first unlock a YESTERDAY card, then GOOD MORNING; LOG MONDAY'S HOURS until they are logged; LOCKED IN; MEETING IN 5 MIN, then ON AIR; LUNCH BREAK while locked between 12:00 and 14:00; a focus timer laid flat, then FOCUSED with the dancing banana; DAY DONE when locked after 17:00; the bouncing Buddy logo after 30 minutes away; night from 23:00.](figures/day-timeline.png)
+![An example working day as a timeline: night until 07:00; at the first unlock a YESTERDAY card, then GOOD MORNING; LOG MONDAY'S HOURS until they are logged; LOCKED IN; MEETING IN 5 MIN, then ON AIR; LUNCH BREAK while locked between 12:00 and 14:00; a focus timer laid flat, then FOCUSED with fireworks; DAY DONE when locked after 17:00; the bouncing Buddy logo after 30 minutes away; night from 23:00.](figures/day-timeline.png)
 
 The first unlock of the day brings a YESTERDAY card (hours, tasks I touched, pull requests merged and reviewed), then the Today page. Meetings from Odoo and Google Calendar get a five-minute countdown. Laying the Buddy flat starts a focus timer that counts up; while it runs, the laptop turns notification banners off and keeps the screen awake with the Caffeine extension, which lets go after 30 idle minutes so an unattended laptop still locks. Locking up after 17:00 shows a DAY DONE recap.
 
@@ -143,9 +143,9 @@ A battery: the board has a charger chip, and a small LiPo with a protection boar
 
 ## Build one
 
-You need a Waveshare ESP32-C6-Touch-LCD-1.47 (the touch version), a USB-C data cable, a small microSD card if you want the animations, and about 23 g of PLA.
+This is a free, open-source hobby project; nothing is for sale. You need a Waveshare ESP32-C6-Touch-LCD-1.47 (the touch version), a USB-C data cable, a small microSD card if you want the animations, and about 23 g of PLA.
 
-1. **Print** the dock (two parts, about 1 h 24 min at 0.16 mm) or the original holder. The models, print settings and assembly steps are on MakerWorld, as a remix of [the original model](https://makerworld.com/en/models/3241960-monitor-buddy).
+1. **Print** the dock (two parts, about 1 h 24 min at 0.16 mm) or the original holder. The original holder, with its print settings, is on MakerWorld; my dock goes up there as a remix of [the original model](https://makerworld.com/en/models/3241960-monitor-buddy).
 2. **Install from the browser.** Plug the board in, open the [installer](https://abdaishere.github.io/monitor-buddy/) in Chrome or Edge, click **Connect your Buddy**, then **Install**. One form asks for your Wi-Fi and your city; nothing has to be built or installed on the computer.
 3. **Copy the animations** from the release's `monitor-buddy-v1.0.0-sdcard.zip` onto the card and put it in while the Buddy is unplugged (the card is read at start-up).
 4. **Connect your laptop** (Linux, optional): install `monitor-buddy_1.0.0_all.deb` from the [latest release](https://github.com/Abdaishere/monitor-buddy/releases/latest) (Ubuntu and Debian), or download the project from [github.com/Abdaishere/monitor-buddy](https://github.com/Abdaishere/monitor-buddy) and run `open-app.sh` (or `./setup.sh` in a terminal). With the Buddy on USB, click **Set up**. It makes the keys, hands them to the Buddy over the cable, starts the helper for the lock, microphone, pull request, calendar and Claude Code features, and offers the Odoo extension. It can be run again at any time and only does what is left.
@@ -156,4 +156,4 @@ Updates come from the same installer page, or over Wi-Fi with `python3 tools/bud
 
 ## Credits
 
-Monitor Buddy stands on [Monitor-Buddy by IdefixRC](https://github.com/IdefixRC/Monitor-Buddy) (MIT), whose face builds on [DESKBUDDY-1.0 by Edison Science Corner](https://github.com/EDISON-SCIENCE-CORNER/DESKBUDDY-1.0) and the Tiny ESP DeskBuddy idea from [schematik.io](https://schematik.io/). The firmware uses Arduino_GFX, ArduinoJson, U8g2, AnimatedGIF and AyresWiFiManager, and the weather comes from [Open-Meteo](https://open-meteo.com/). The dock's head is built on IdefixRC's [printed holder](https://makerworld.com/en/models/3241960-monitor-buddy), so the dock is published on MakerWorld only, as a remix of it. The full list is in [CREDITS.md](CREDITS.md).
+Monitor Buddy stands on [Monitor-Buddy by IdefixRC](https://github.com/IdefixRC/Monitor-Buddy) (MIT), which builds on the Tiny ESP DeskBuddy idea from [schematik.io](https://schematik.io/) and took additional face designs from [DESKBUDDY-1.0 by Edison Science Corner](https://github.com/EDISON-SCIENCE-CORNER/DESKBUDDY-1.0). Thanks to IdefixRC and to the original's contributors, AmyJoT and Killo1988. The browser installer uses esptool-js by Espressif and posix_tz_db by Nayar Systems. The firmware uses Arduino_GFX, ArduinoJson, U8g2, AnimatedGIF and AyresWiFiManager, and the weather comes from [Open-Meteo](https://open-meteo.com/). The dock's head is built on IdefixRC's [printed holder](https://makerworld.com/en/models/3241960-monitor-buddy), so the dock is published on MakerWorld only, as a remix of it. The full list is in [CREDITS.md](CREDITS.md).

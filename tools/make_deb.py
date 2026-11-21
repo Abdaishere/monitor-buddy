@@ -89,6 +89,9 @@ def build(version, out_dir):
             notice = file.read()
         with open(os.path.join(ROOT, 'web', 'vendor', 'posix_tz_db', 'LICENSE')) as file:   # zones.json ships in the package
             notice += '\n\nweb/vendor/posix_tz_db/zones.json: posix_tz_db by Nayar Systems, under this licence:\n\n' + file.read()
+        for extra in ('NOTICE', 'THIRD-PARTY-LICENSES.md'):   # the live preview holds the firmware's libraries
+            with open(os.path.join(ROOT, extra), encoding='utf-8') as file:
+                notice += '\n\n' + '=' * 60 + '\n' + extra + '\n' + '=' * 60 + '\n\n' + file.read()
         write(os.path.join(stage, 'usr/share/doc/monitor-buddy/copyright'), notice)
         size = sum(os.path.getsize(os.path.join(folder, name)) for folder, _, files in os.walk(stage) for name in files) // 1024 + 1
         write(os.path.join(stage, 'DEBIAN', 'control'), CONTROL.format(version=version, size=size))
