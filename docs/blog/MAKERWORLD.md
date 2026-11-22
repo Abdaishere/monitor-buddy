@@ -2,7 +2,7 @@
 
 **It reacts to you.** Knock twice on its head and it says HELLO! Lift it off the dock and lay it flat, and it starts a focus timer. Click it back in, and it goes back to watching your day.
 
-**A free, open-source hobby project.** Nothing here is for sale: the model, the firmware and the laptop tools are all free.
+**A free hobby project.** Nothing here is for sale: the model is free to download [on MakerWorld](https://makerworld.com/en/models/3664201-monitor-buddy-keyboard-dock-workday-firmware), and the firmware and laptop tools are open source (MIT).
 
 **You'll need:** the two printed parts (about 1 h 24 min, 23 g), a Waveshare ESP32-C6-Touch-LCD-1.47 (touch version, ~US$15, e.g. from [Waveshare](https://www.waveshare.com/esp32-c6-touch-lcd-1.47.htm?sku=31203)) and a USB-C data cable.
 
@@ -15,9 +15,9 @@
 | Animations from the microSD card, Bug Hop game | yes | yes |
 | Installing the firmware and changing settings, from the browser (Chrome or Edge) | yes | yes |
 | The laptop app's editor: a live preview of the screen, page order, every setting | Windows and Linux | yes |
-| Workday features: meeting warning, ON AIR, screen lock, CI, pull requests, Claude Code, Odoo hours | no | yes |
+| Workday features: meeting warning, ON AIR, screen lock, CI, pull requests, Claude Code, work hours | no | yes |
 
-The workday features come from a small helper on a Linux laptop. Screen lock, pull requests, Claude Code and Odoo work on any desktop; ON AIR needs PipeWire, and the quiet focus timer and Google Calendar need GNOME. Windows and macOS ports of the helper are welcome on GitHub.
+The workday features come from a small helper on a Linux laptop. Screen lock, pull requests, Claude Code and work hours work on any desktop; ON AIR needs PipeWire, and the quiet focus timer and Google Calendar need GNOME. Windows and macOS ports of the helper are welcome on GitHub.
 
 **A remix of [Monitor-Buddy by IdefixRC](https://makerworld.com/en/models/3241960-monitor-buddy).** Same board, the same snug screen holder, now on a click-in dock that sits on your keyboard, with new firmware that follows your working day.
 
@@ -43,7 +43,7 @@ A 1.47-inch touchscreen with a face that reacts to what you are doing. It chews 
 ## What the firmware does
 
 - **More than 30 faces**: 9 moods you tap through and over 20 status faces it picks by itself. The work ones, highest priority first: knock greeting, shake, night, on air, meeting soon, focus timer, timer done, laptop locked (LUNCH BREAK or AWAY), Claude needs you, log your hours, CI red, Claude done, locked in. The personal ones: welcome back, stretch, lunch time, water, birthday, anniversary, weekend, your own message.
-- **Work pages**: Odoo hours and tasks, a Today page (next meeting, hours, reviews, Claude Code usage), pull requests with check and review marks, and a YESTERDAY card at the first unlock of the day.
+- **Work pages**: work hours and tasks, a Today page (next meeting, hours, reviews, Claude Code usage), pull requests with check and review marks, and a YESTERDAY card at the first unlock of the day.
 - **Everyday pages**: clock, date, weather, GitHub streak and heatmap, a signature page, and the Bug Hop game.
 - **Gestures**: knock twice for a greeting, shake for a dizzy face, lay it flat to start a focus timer that silences notifications, stand it up to stop it.
 - **Animations** from the microSD card, nine drawn for this screen and included. Three play by themselves: when your hours pass eight, when CI turns green, and after a long focus session. A bouncing-logo screensaver starts after 30 minutes away.
@@ -129,9 +129,9 @@ No programs to install and nothing to build: it is done from the browser.
 
 That is a complete Buddy: face, clock, weather, GitHub page, gestures, animations and the game. It works on Windows, macOS and Linux.
 
-**The workday features** (screen lock, ON AIR, pull requests, meetings, Claude Code, Odoo) need a Linux computer on the same Wi-Fi:
+**The workday features** (screen lock, ON AIR, pull requests, meetings, Claude Code, work hours) need a Linux computer on the same Wi-Fi:
 
-4. **The laptop app.** Keep the Buddy on USB. On Ubuntu or Debian, download `monitor-buddy_1.0.0_all.deb` from the [latest release](https://github.com/Abdaishere/monitor-buddy/releases/latest) and double-click it; on other systems download the project from [GitHub](https://github.com/Abdaishere/monitor-buddy) (Code → Download ZIP), unpack it and run `open-app.sh` (or `./setup.sh` in a terminal). Open **Monitor Buddy** and click **Set up**. It makes the two secret keys on your computer, gives them to the Buddy over the cable, starts the helper, and asks once about the optional parts (Odoo, Claude Code, fish shell). Parts your desktop cannot feed (no GNOME, no PipeWire) are skipped with a note. Run it again at any time: it only does what is left.
+4. **The laptop app.** Keep the Buddy on USB. On Ubuntu or Debian, download `monitor-buddy_1.0.0_all.deb` from the [latest release](https://github.com/Abdaishere/monitor-buddy/releases/latest) and double-click it; on other systems download the project from [GitHub](https://github.com/Abdaishere/monitor-buddy) (Code → Download ZIP), unpack it and run `open-app.sh` (or `./setup.sh` in a terminal). Open **Monitor Buddy** and click **Set up**. It makes the two secret keys on your computer, gives them to the Buddy over the cable, starts the helper, and asks once about the optional parts (work hours, Claude Code, fish shell). Parts your desktop cannot feed (no GNOME, no PipeWire) are skipped with a note. Run it again at any time: it only does what is left.
 5. **Updates.** Open the installer and choose **Update firmware**, or, without a cable, `python3 tools/buddy_flash.py` with the release's `-app.bin`: a signed update over Wi-Fi in about 90 seconds, which goes on where it stopped if the Wi-Fi breaks.
 
 The full guide with screenshots is in the [README](https://github.com/Abdaishere/monitor-buddy#set-up). IdefixRC's own [web flasher](https://idefixrc.github.io/Monitor-Buddy/) installs the original Monitor-Buddy firmware, not this one.

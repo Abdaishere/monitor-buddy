@@ -3,3 +3,6 @@ contact_links:
   - name: Troubleshooting
     url: https://github.com/Abdaishere/monitor-buddy#if-something-does-not-work
     about: The most common problems and their fixes, in the README.
+  - name: The printed dock on MakerWorld
+    url: https://makerworld.com/en/models/3664201-monitor-buddy-keyboard-dock-workday-firmware
+    about: Print files, print settings and questions about the printed parts.

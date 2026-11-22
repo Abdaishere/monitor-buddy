@@ -4,13 +4,13 @@
 
 *A free, open-source hobby project: nothing is for sale. You'll need a Waveshare ESP32-C6-Touch-LCD-1.47 (touch version, ~US$15, e.g. from [Waveshare](https://www.waveshare.com/esp32-c6-touch-lcd-1.47.htm?sku=31203)); the two printed parts of the dock are optional.*
 
-**Videos:** [real demo](docs/blog/images/demo.mp4) · B-roll (3D renders, 1080p) as release downloads: [turntable](https://github.com/Abdaishere/monitor-buddy/releases/download/v1.0.0/broll-turntable.mp4), [dolly-in](https://github.com/Abdaishere/monitor-buddy/releases/download/v1.0.0/broll-dolly-in.mp4), [rack focus](https://github.com/Abdaishere/monitor-buddy/releases/download/v1.0.0/broll-rack-focus.mp4), [exploded](https://github.com/Abdaishere/monitor-buddy/releases/download/v1.0.0/broll-exploded.mp4), [night](https://github.com/Abdaishere/monitor-buddy/releases/download/v1.0.0/broll-night.mp4).
+**Videos:** [launch video on YouTube](https://youtu.be/zsu_CKz4yd0) · [YouTube Short](https://youtube.com/shorts/FYTS_glE3H8) · [B-roll reel](https://youtu.be/cVD4qfim--U) · [both mounts reel](https://youtu.be/3k1B65LjsRc) · [real demo](docs/blog/images/demo.mp4) · B-roll (3D renders, 1080p) as release downloads: [turntable](https://github.com/Abdaishere/monitor-buddy/releases/download/v1.0.0/broll-turntable.mp4), [dolly-in](https://github.com/Abdaishere/monitor-buddy/releases/download/v1.0.0/broll-dolly-in.mp4), [rack focus](https://github.com/Abdaishere/monitor-buddy/releases/download/v1.0.0/broll-rack-focus.mp4), [exploded](https://github.com/Abdaishere/monitor-buddy/releases/download/v1.0.0/broll-exploded.mp4), [night](https://github.com/Abdaishere/monitor-buddy/releases/download/v1.0.0/broll-night.mp4).
 
 **A 1.47-inch desk screen with a face that follows your working day**, on a printed keyboard dock. It chews during your lunch break, goes red when CI fails, says ON AIR while your microphone is in use, and looks up when Claude Code is waiting for you.
 
 ![Monitor Buddy on its keyboard dock, showing the date](docs/blog/images/cover-4x3.jpg)
 
-This is a fork of [Monitor-Buddy](https://github.com/IdefixRC/Monitor-Buddy) by [IdefixRC](https://github.com/IdefixRC) (MIT, see [LICENSE](LICENSE) and [NOTICE](NOTICE)). The base firmware, the web flasher and the printed holder are their work; full [credits](#credits) are below. It adds firmware that follows Odoo, GitHub, Google Calendar and Claude Code, a laptop helper, AES-256-GCM sealed Wi-Fi, signed updates over the air, knock and shake gestures, and a two-part keyboard dock.
+This is a fork of [Monitor-Buddy](https://github.com/IdefixRC/Monitor-Buddy) by [IdefixRC](https://github.com/IdefixRC) (MIT, see [LICENSE](LICENSE) and [NOTICE](NOTICE)). The base firmware, the web flasher and the printed holder are their work; full [credits](#credits) are below. It adds firmware that follows GitHub, Google Calendar, Claude Code and your work hours, a laptop helper, AES-256-GCM sealed Wi-Fi, signed updates over the air, knock and shake gestures, and a two-part keyboard dock.
 
 | | | |
 |---|---|---|
@@ -23,7 +23,7 @@ This is a fork of [Monitor-Buddy](https://github.com/IdefixRC/Monitor-Buddy) by 
 - **The board:** Waveshare ESP32-C6-Touch-LCD-1.47, the **touch** version (8 MB flash, about US$15, e.g. from [Waveshare](https://www.waveshare.com/esp32-c6-touch-lcd-1.47.htm?sku=31203)). The version without touch is smaller and does not work.
 - **A USB-C cable that carries data** (some charging cables don't).
 - **A computer with Chrome or Edge**, once, for the install. Windows, macOS, Linux and ChromeOS all work.
-- **The printed dock** (optional, two parts): print settings and assembly in [docs/blog/MAKERWORLD.md](docs/blog/MAKERWORLD.md). The model files go on MakerWorld only, as a remix of the original; the link will be added here when the remix is listed (see [Licence](#licence)).
+- **The printed dock** (optional, two parts): print settings and assembly in [docs/blog/MAKERWORLD.md](docs/blog/MAKERWORLD.md). The model files are on MakerWorld only, as a remix of the original: [Monitor Buddy Keyboard Dock + Workday Firmware](https://makerworld.com/en/models/3664201-monitor-buddy-keyboard-dock-workday-firmware) (see [Licence](#licence)).
 - Optional: a microSD card for the animations, and a Linux computer for the workday features.
 
 ## Set up
@@ -120,7 +120,7 @@ The page shows each step as it happens and ends with the same kind of summary: w
 
 ![The round of pages: drag to reorder, untick to hide](docs/images/setup/app-6-pages.png)
 
-What the preview cannot know: prices, weather and the work pages (Odoo, pull requests, Claude) show sample numbers, and the Animations page is empty (the GIFs are on the Buddy's card). A Buddy with firmware from before the page order keeps the usual order until it is updated: the editor says so, and the preview still shows the order you chose.
+What the preview cannot know: prices, weather and the work pages (work hours, pull requests, Claude) show sample numbers, and the Animations page is empty (the GIFs are on the Buddy's card). A Buddy with firmware from before the page order keeps the usual order until it is updated: the editor says so, and the preview still shows the order you chose.
 
 **On Windows.** The editor, the preview and Apply work there too: install [Python 3](https://www.python.org/downloads/), run `python -m pip install pyserial`, choose **Code → Download ZIP** on the [project page](https://github.com/Abdaishere/monitor-buddy), unpack it and double-click **`open-app.cmd`**. The Buddy is found on its COM port by itself (`open-app.cmd --board COM5` names it). The background helper of the first tab, and with it "Say something", is for Linux.
 
@@ -137,7 +137,7 @@ Prefer a terminal? `./setup.sh` does the same setup, and `buddy-say tea is ready
 - makes two secret keys **on your computer** and gives them to the Buddy over the USB cable. They are never shown, never sent over Wi-Fi and never leave your machine;
 - starts a small helper in the background that tells the Buddy what your computer is doing;
 - adds the app to your app menu, and the `buddy-say` command;
-- sets up the optional parts you chose: Odoo hours and tasks (Chrome), Claude Code sessions, the fish shell hook.
+- sets up the optional parts you chose: work hours and tasks (Chrome), Claude Code sessions, the fish shell hook.
 
 Things worth knowing:
 
@@ -193,7 +193,7 @@ Settings and keys live on the board, not in the build: `config/config.h` (copy i
 ## Licence
 
 - **Code** (firmware, tools, web flasher): MIT, see [LICENSE](LICENSE). Copyright IdefixRC for the original, Abdallah El Belkasy for this fork's changes.
-- **3D models**: not in this repository. The dock's head is built on IdefixRC's holder, which is under the MakerWorld Exclusive License, so the dock is published on MakerWorld only (link to follow), as a remix of the [original model](https://makerworld.com/en/models/3241960-monitor-buddy).
+- **3D models**: not in this repository. The dock's head is built on IdefixRC's holder, which is under the MakerWorld Exclusive License, so the dock is published [on MakerWorld only](https://makerworld.com/en/models/3664201-monitor-buddy-keyboard-dock-workday-firmware), as a remix of the [original model](https://makerworld.com/en/models/3241960-monitor-buddy).
 - **Animations** in `sdcard/gifs`: drawn by `tools/buddy_art.py`, MIT like the code.
 - **Photos, renders and diagrams** in `docs/blog`: by Abdallah El Belkasy.
 
