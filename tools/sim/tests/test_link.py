@@ -128,6 +128,32 @@ def test_broken_off_upload_leaves_no_part_file(buddy):
     assert int(buddy.status_line()['fps']) >= 28
 
 
+def test_list_the_animations(buddy):
+    """`L`: every animation with its size, and the room left where they are kept."""
+    folder = os.path.join(ROOT, 'sdcard', 'gifs')
+    answer = json.loads(buddy.link(b'L')[9:])
+    assert sorted(answer['gifs']) == sorted([name, os.path.getsize(os.path.join(folder, name))] for name in os.listdir(folder))
+    assert answer['free_kb'] > 0 and 'more' not in answer
+
+
+def test_own_picture_on_the_github_page(buddy):
+    """`A` then `D` pieces: the app's picture on the GitHub page, cut to a circle; `A` of size 0 takes it away."""
+    red = (0xF800).to_bytes(2, 'little') * (88 * 88)
+    assert buddy.link(b'A' + (len(red) - 2).to_bytes(4, 'big')) is None, 'only a whole picture is taken'
+    assert buddy.link(b'A' + len(red).to_bytes(4, 'big')) is not None
+    for at in range(0, len(red), 1024):
+        assert buddy.link(b'D' + at.to_bytes(4, 'big') + red[at:at + 1024], wait_ms=1500) is not None, 'piece at %d' % at
+    buddy.run(20)
+    assert buddy.show_page(6)
+    buddy.run(1)
+    shot = buddy.shot()
+    assert shot.getpixel((60, 60)) == (255, 0, 0)
+    assert shot.getpixel((20, 20)) == (0, 0, 0), 'the corners are outside the circle'
+    assert buddy.link(b'A' + bytes(4)) is not None
+    buddy.run(1)
+    assert buddy.read_file('/avatar.bin') is None and buddy.shot().getpixel((60, 60)) != (255, 0, 0)
+
+
 def test_card_test_passes(buddy):
     """`C`: the card test writes, reads back and deletes 256 KB, and the animations return to the card."""
     answer = buddy.link(b'C', wait_ms=20000)

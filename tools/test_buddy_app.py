@@ -2,20 +2,49 @@
 
 The server runs on 127.0.0.1 with a pretend Buddy in a temporary home folder.
 """
+import base64
+import io
 import json
 import os
 import threading
 import time
 import unittest
-from unittest import mock
 import urllib.error
 import urllib.request
+from unittest import mock
 
 import buddy_app
 import buddy_keys
 from test_buddy_setup import FakeBoard, Home
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
+
+
+class FakePut:
+    """tools/buddy_put.py with a Buddy that holds what it was sent."""
+
+    class Refused(Exception):
+        pass
+
+    def __init__(self):
+        self.gifs, self.pictures, self.problem = {'pong.gif': 1000}, [], None
+
+    def buddy(self):
+        if self.problem:
+            raise self.Refused(self.problem)
+        return 'cipher', '10.0.0.5'
+
+    def animations(self, cipher, address):
+        return {'gifs': sorted([name, size] for name, size in self.gifs.items()), 'free_kb': 500}
+
+    def put(self, cipher, address, name, data):
+        self.gifs[name] = len(data)
+
+    def remove(self, cipher, address, name):
+        self.gifs.pop(name)
+
+    def picture(self, cipher, address, pixels):
+        self.pictures.append(pixels)
 
 
 class AppCase(Home):
@@ -56,7 +85,8 @@ class AppCase(Home):
                 {'name': 'Nowhere', 'latitude': 1, 'longitude': 2, 'timezone': 'Mars/Olympus'}]}).encode()
 
         self.data = os.path.join(self.home, '.config', 'monitor-buddy')   # where the earlier settings go
-        self.app = buddy_app.App(make_setup=make, say=say, fetch=fetch, linux=True, data=self.data)
+        self.put = FakePut()
+        self.app = buddy_app.App(make_setup=make, say=say, fetch=fetch, linux=True, data=self.data, put=self.put)
         self.server, self.token, self.state = buddy_app.serve(self.app)
         self.port = self.server.server_address[1]
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
@@ -93,7 +123,7 @@ class Setup(AppCase):
     def test_status_changes_nothing(self):
         status = self.api('/api/status')
         self.assertEqual(status['missing'], [])
-        self.assertEqual(status['answers'], {'odoo': False, 'claude': False, 'fish': False})
+        self.assertEqual(status['answers'], {'odoo': False, 'claude': False, 'fish': False, 'firewall': False})
         self.assertFalse(status['done_before'])
         self.assertEqual(os.listdir(self.home), [])
         self.assertEqual(self.board.writes, 0)
@@ -118,7 +148,7 @@ class Setup(AppCase):
         self.assertTrue(os.path.exists(os.path.join(self.home, '.claude', 'settings.json')))
         self.assertFalse(os.path.exists(os.path.join(self.home, '.config', 'fish', 'conf.d', 'buddy.fish')))
         status = self.api('/api/status')
-        self.assertEqual(status['answers'], {'odoo': False, 'claude': True, 'fish': False})
+        self.assertEqual(status['answers'], {'odoo': False, 'claude': True, 'fish': False, 'firewall': False})
         self.assertTrue(status['done_before'])
 
     def test_a_second_run_resumes_and_keeps_the_keys(self):
@@ -457,13 +487,57 @@ class Say(AppCase):
         self.assertEqual((answer['ok'], answer['error']), (False, self.say_problem))
 
 
+class Pictures(AppCase):
+    def gif(self):
+        from PIL import Image
+        frames = [Image.new('RGB', (400, 300), colour) for colour in ('red', 'blue')]
+        out = io.BytesIO()
+        frames[0].save(out, 'GIF', save_all=True, append_images=frames[1:], duration=100, loop=0)
+        return base64.b64encode(out.getvalue()).decode()
+
+    def test_the_animations_are_listed(self):
+        self.assertEqual(self.api('/api/gifs'), {'ok': True, 'gifs': [['pong.gif', 1000]], 'free_kb': 500})
+
+    def test_a_gif_is_made_to_fit_and_sent_under_a_name_the_buddy_takes(self):
+        answer = self.api('/api/gifs/add', {'name': '../My cat!.GIF', 'data': self.gif()})
+        self.assertTrue(answer['ok'], answer)
+        self.assertEqual(answer['added'], 'My-cat-.gif')
+        self.assertIn(['My-cat-.gif', self.put.gifs['My-cat-.gif']], answer['gifs'])
+
+    def test_what_is_no_picture_is_not_sent(self):
+        answer = self.api('/api/gifs/add', {'name': 'x.gif', 'data': base64.b64encode(b'not a gif').decode()})
+        self.assertEqual((answer['ok'], answer['error']), (False, 'x.gif is not a picture this computer can read.'))
+        self.assertEqual(self.api('/api/gifs/add', {'name': 'x.gif', 'data': '%%%'})['error'], 'bad request')
+        self.assertEqual(list(self.put.gifs), ['pong.gif'])
+
+    def test_a_gif_is_removed(self):
+        self.assertEqual(self.api('/api/gifs/remove', {'name': 'pong.gif'})['gifs'], [])
+
+    def test_the_picture_goes_whole_or_the_github_one_comes_back(self):
+        whole = bytes(range(256)) * (88 * 88 * 2 // 256) + bytes(88 * 88 * 2 % 256)
+        self.assertEqual(self.api('/api/picture', {'data': base64.b64encode(whole[:-2]).decode()})['error'], 'bad request')
+        self.assertTrue(self.api('/api/picture', {'data': base64.b64encode(whole).decode()})['ok'])
+        self.assertTrue(self.api('/api/picture', {'data': None})['ok'])
+        self.assertEqual(self.put.pictures, [whole, b''])
+
+    def test_a_problem_is_passed_on(self):
+        self.put.problem = 'The Buddy does not answer at 10.0.0.5.'
+        self.assertEqual(self.api('/api/gifs'), {'ok': False, 'error': self.put.problem})
+
+    def test_only_a_gif_may_be_big(self):
+        self.assertEqual(self.call('/api/say', {'text': 'x' * 20000})[0], 400)
+        self.assertTrue(self.api('/api/gifs/add', {'name': 'big.gif', 'data': self.gif(), 'pad': 'x' * 20000})['ok'])
+
+
 class Private(AppCase):
     def test_no_token_no_answer(self):
-        for path, body in (('/api/status', None), ('/api/progress', None), ('/api/say', {'text': 'hi'}), ('/api/setup', {})):
+        for path, body in (('/api/status', None), ('/api/progress', None), ('/api/say', {'text': 'hi'}), ('/api/setup', {}),
+                           ('/api/gifs', None), ('/api/gifs/remove', {'name': 'pong.gif'}), ('/api/picture', {'data': None})):
             self.assertEqual(self.call(path, body, token='wrong')[0], 403, path)
             self.assertEqual(self.call(path, body, token='')[0], 403, path)
         self.assertEqual(self.said, [])
         self.assertEqual(self.board.writes, 0)
+        self.assertEqual((list(self.put.gifs), self.put.pictures), (['pong.gif'], []))
 
     def test_another_site_cannot_use_it(self):
         self.assertEqual(self.call('/api/say', {'text': 'hi'}, host='evil.example')[0], 403)

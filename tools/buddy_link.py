@@ -81,8 +81,10 @@ CONFIG_H = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'confi
 LINK_KEY_FILE = os.path.expanduser('~/.config/monitor-buddy/link-key')
 NO_LINK_KEY = 'This computer is not set up for the Buddy yet. Open Monitor Buddy and click Set up (or run ./setup.sh) first.'
 ADDRESS_FILE = os.path.expanduser('~/.cache/monitor-buddy/address')
+NO_ADDRESS = 'This computer does not know where the Buddy is yet. Plug it in by USB for a minute, then try again.'
 LINK_PORT = 4747
 LINK_TIMEOUT_S = 1
+HELLO_SKEW_S = 60   # LINK_SKEW_S in src/main.cpp
 POLL_S = 5
 PING_S = 0.5
 RESEND_S = 60
@@ -408,6 +410,54 @@ def send_wifi(cipher, address, message, timeout=LINK_TIMEOUT_S):
     return answer[2:] if answer.startswith(b'ok') else None
 
 
+def hello_address(cipher, data, sender, now=None):
+    """`sender` when `data` is a hello from the Buddy (linkHello() in
+    src/main.cpp): sealed with the link key, naming that same address, and at
+    most HELLO_SKEW_S old, so a recorded one cannot steer the helper. Else None."""
+    if len(data) < 12 + 1 + 16 or data[0] != 0x40:
+        return None
+    try:
+        words = cipher.decrypt(data[:12], data[12:], None).decode().split()
+    except (InvalidTag, UnicodeDecodeError):
+        return None
+    now = time.time() if now is None else now
+    if len(words) == 3 and words[0] == 'hello' and words[1] == sender and words[2].isdigit() \
+            and abs(now - int(words[2])) <= HELLO_SKEW_S:
+        return sender
+    return None
+
+
+def hello_socket():
+    """The socket the Buddy's hellos arrive on, or None when the port is taken."""
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind(('', LINK_PORT))
+    except OSError as error:
+        print('hellos: cannot listen on UDP', LINK_PORT, error, flush=True)
+        return None
+    sock.setblocking(False)
+    return sock
+
+
+def heard_hello(sock, cipher):
+    """The address of the last good hello waiting on `sock`, else None."""
+    found = None
+    while sock and cipher:
+        try:
+            data, (sender, _) = sock.recvfrom(2048)
+        except OSError:
+            break
+        found = hello_address(cipher, data, sender) or found
+    return found
+
+
+def save_address(address):
+    os.makedirs(os.path.dirname(ADDRESS_FILE), exist_ok=True)
+    with open(ADDRESS_FILE, 'w') as file:
+        file.write(address)
+    print('buddy address:', address, flush=True)
+
+
 def open_port():
     fd = os.open((glob.glob(PORT) or [PORT])[0], os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
     tty.setraw(fd)
@@ -433,7 +483,7 @@ def main():
     # Stopped or crashed in focus: notifications and Caffeine go back as they were.
     signal.signal(signal.SIGTERM, lambda *_: sys.exit())
     atexit.register(lambda: os.path.exists(FOCUS_FILE) and focus_sync(True, False))
-    fd, cipher, route = None, link_cipher(), None
+    fd, cipher, route, hellos = None, link_cipher(), None, hello_socket()
     try:
         address = open(ADDRESS_FILE).read().strip()
     except OSError:
@@ -484,10 +534,7 @@ def main():
                 timer_runs, heard_at = found[1] == b'1', now
             if (found := re.search(rb' ip=(\d+\.\d+\.\d+\.\d+)', line)) and found[1].decode() not in (address, '0.0.0.0'):
                 address = found[1].decode()
-                os.makedirs(os.path.dirname(ADDRESS_FILE), exist_ok=True)
-                with open(ADDRESS_FILE, 'w') as file:
-                    file.write(address)
-                print('buddy address:', address, flush=True)
+                save_address(address)
         answer = None
         if state != sent or now - sent_at >= RESEND_S:
             line, was = json.dumps(state), route
@@ -530,6 +577,9 @@ def main():
             print('focus sync failed:', error, flush=True)
         while (left := now + POLL_S - time.monotonic()) > 0:   # pings, so a tap or a BOOT press is answered at once
             time.sleep(min(PING_S, left))
+            if (moved := heard_hello(hellos, cipher)) and moved != address:   # the Buddy got a new address
+                address = moved
+                save_address(address)
             if cipher and address:
                 act(send_wifi(cipher, address, b'P'), meetings)
 

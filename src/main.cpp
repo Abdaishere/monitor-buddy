@@ -99,6 +99,10 @@
 #include <LittleFS.h>
 #include <SD.h>
 #include <AnimatedGIF.h>
+#ifndef MBSIM   // the simulator shows gh_avatar.h
+#include <JPEGDEC.h>
+#include <miniz.h>   // the ROM's inflate (tinfl), for the GitHub picture's PNG
+#endif
 #include <sd_diskio.h>
 #include <diskio.h>
 #include <AyresWiFiManager.h>
@@ -1799,6 +1803,255 @@ static bool githubGet(const String &url, Scan *scan, String *body) {
   return ok;
 }
 
+// ── The GitHub picture ───────────────────────────────────
+// The picture of whichever user is set. GitHub sends it GH_AVATAR_SIZE wide
+// (?s=), as JPEG or PNG; it is decoded once and kept in LittleFS under the
+// user's name. A day later, or for another user, it is fetched again. A picture
+// the app sends (linkPicture()) takes its place under the name AVATAR_OWN until
+// the app takes it away. The page reads it from there, never from RAM, and cuts
+// it to a circle; without one it shows gh_avatar.h.
+static const char *const AVATAR_PATH = "/avatar.bin", *const AVATAR_PART = "/avatar.part";
+static const char AVATAR_OWN[] = "*";   // no GitHub login holds a *
+struct AvatarHead { char user[sizeof(settings.githubUser)]; uint32_t at; };   // then the RGB565 pixels, row by row
+static const size_t AVATAR_BYTES = GH_AVATAR_SIZE * GH_AVATAR_SIZE * 2;
+static volatile int8_t avatarOnFile = -1;   // -1: not looked yet
+static volatile bool githubAgain = false;   // the app's picture is gone: fetch the GitHub one now
+
+static bool avatarIsOwn(const AvatarHead &head) { return strncmp(head.user, AVATAR_OWN, sizeof(head.user)) == 0; }
+
+// Draws the saved picture at (x, y), the pixels whose centres lie within the
+// circle; false without one, or with another user's.
+static bool drawAvatar(int x, int y) {
+  if (avatarOnFile < 0) avatarOnFile = LittleFS.exists(AVATAR_PATH);
+  if (!avatarOnFile) return false;
+  File f = LittleFS.open(AVATAR_PATH, "r");
+  AvatarHead head;
+  bool ok = f && f.read((uint8_t *)&head, sizeof(head)) == sizeof(head)
+            && (avatarIsOwn(head) || strncmp(head.user, settings.githubUser, sizeof(head.user)) == 0);
+  uint16_t row[GH_AVATAR_SIZE], *frame = gfx->getFramebuffer();
+  for (int r = 0; ok && r < GH_AVATAR_SIZE; r++) {
+    ok = f.read((uint8_t *)row, sizeof(row)) == sizeof(row);
+    const int dy = 2 * r + 1 - GH_AVATAR_SIZE;   // in half pixels from the middle
+    int from = 0;
+    while (from < GH_AVATAR_SIZE / 2 && (2 * from + 1 - GH_AVATAR_SIZE) * (2 * from + 1 - GH_AVATAR_SIZE) + dy * dy > GH_AVATAR_SIZE * GH_AVATAR_SIZE) from++;
+    if (ok) memcpy(frame + (y + r) * SCREEN_W + x + from, row + from, (GH_AVATAR_SIZE - 2 * from) * 2);
+  }
+  if (f) f.close();
+  return ok;
+}
+
+#ifndef MBSIM
+static File avatarOut;   // the picture being decoded, netTask only
+
+static void avatarRow(int y, int x, const uint16_t *pixels, int count) {
+  if (y >= GH_AVATAR_SIZE || x >= GH_AVATAR_SIZE) return;
+  avatarOut.seek(sizeof(AvatarHead) + (y * GH_AVATAR_SIZE + x) * 2);
+  avatarOut.write((const uint8_t *)pixels, min(count, GH_AVATAR_SIZE - x) * 2);
+}
+
+// The picture's own size: each page pixel takes the picture pixel at its centre.
+static int avatarW, avatarH;
+static int avatarFrom(int page, int size) { return (2 * page + 1) * size / (2 * GH_AVATAR_SIZE); }
+
+// A run of picture pixels on picture row sy from column sx: the page pixels that sample it.
+static void avatarSample(int sy, int sx, const uint16_t *pixels, int count) {
+  for (int y = 0; y < GH_AVATAR_SIZE; y++) {
+    if (avatarFrom(y, avatarH) != sy) continue;
+    uint16_t row[GH_AVATAR_SIZE];
+    int from = -1, n = 0;
+    for (int x = 0; x < GH_AVATAR_SIZE; x++) {
+      const int at = avatarFrom(x, avatarW) - sx;
+      if (at < 0 || at >= count) continue;
+      if (from < 0) from = x;
+      row[n++] = pixels[at];
+    }
+    if (n) avatarRow(y, from, row, n);
+  }
+}
+
+static int avatarJpegDraw(JPEGDRAW *d) {
+  for (int y = 0; y < d->iHeight; y++) avatarSample(d->y + y, d->x, d->pPixels + y * d->iWidth, d->iWidth);
+  return 1;
+}
+
+static char avatarWhy[48] = "";   // why the last decode failed, for the log
+static uint32_t big32(const uint8_t *b) { return (uint32_t)b[0] << 24 | b[1] << 16 | b[2] << 8 | b[3]; }
+
+// GitHub's PNG pictures, any size: 8 bits a channel, not interlaced; gray, RGB
+// or a palette, with or without alpha (on black). The ROM's inflate streams it
+// through a 32 KB window; two rows are kept to undo the filters, and the rows
+// the page samples are turned into its pixels. The IDAT bytes are moved together
+// at the front of `data`, copied out, and `data` is freed (and set to nullptr)
+// before the window is asked for: the download often sits in the largest block.
+static bool avatarPng(uint8_t *&data, int len) {
+  uint32_t w = 0, h = 0;
+  uint8_t depth = 0, type = 0, interlace = 0, palette[256][4];
+  memset(palette, 255, sizeof(palette));
+  size_t packed = 0;
+  for (int at = 8; at + 12 <= len;) {
+    const uint32_t size = big32(data + at);
+    const uint8_t *kind = data + at + 4, *body = data + at + 8;
+    if (size > (uint32_t)(len - at - 12)) return false;
+    if (!memcmp(kind, "IHDR", 4) && size >= 13) {
+      w = big32(body), h = big32(body + 4), depth = body[8], type = body[9], interlace = body[12];
+    } else if (!memcmp(kind, "PLTE", 4)) {
+      for (uint32_t i = 0; i < size / 3 && i < 256; i++) memcpy(palette[i], body + 3 * i, 3);
+    } else if (!memcmp(kind, "tRNS", 4) && type == 3) {
+      for (uint32_t i = 0; i < size && i < 256; i++) palette[i][3] = body[i];
+    } else if (!memcmp(kind, "IDAT", 4)) {
+      memmove(data + packed, body, size);   // packed <= at: only bytes already read are overwritten
+      packed += size;
+    }
+    at += size + 12;
+  }
+  static const uint8_t CHANNELS[7] = {1, 0, 3, 1, 2, 0, 4};
+  const int ch = type < 7 ? CHANNELS[type] : 0;
+  if (!w || !h || w > 2048 || h > 2048 || depth != 8 || interlace || !ch || !packed) {
+    snprintf(avatarWhy, sizeof(avatarWhy), "png %ux%u depth %u type %u", (unsigned)w, (unsigned)h, depth, type);
+    return false;
+  }
+  avatarW = w, avatarH = h;
+  uint8_t *zipped = (uint8_t *)malloc(packed);
+  if (zipped) memcpy(zipped, data, packed);
+  free(data);
+  data = nullptr;
+  const size_t stride = w * ch + 1;
+  uint8_t *dict = (uint8_t *)malloc(TINFL_LZ_DICT_SIZE), *row = (uint8_t *)malloc(2 * stride);
+  tinfl_decompressor *inflator = (tinfl_decompressor *)malloc(sizeof(tinfl_decompressor));
+  bool ok = zipped && dict && row && inflator;
+  if (!ok) snprintf(avatarWhy, sizeof(avatarWhy), "no memory (%d %d %d %d)", !!zipped, !!dict, !!row, !!inflator);
+  uint8_t *cur = row, *prev = row ? row + stride : nullptr;
+  size_t filled = 0, inAt = 0, dictAt = 0;
+  uint32_t y = 0;
+  if (ok) tinfl_init(inflator);
+  while (ok) {
+    size_t inLen = packed - inAt, outLen = TINFL_LZ_DICT_SIZE - dictAt;
+    const tinfl_status status = tinfl_decompress(inflator, zipped + inAt, &inLen, dict, dict + dictAt, &outLen,
+                                                 TINFL_FLAG_PARSE_ZLIB_HEADER);
+    inAt += inLen;
+    for (size_t i = 0; i < outLen && y < h && ok; i++) {   // the new bytes, row by row
+      cur[filled++] = dict[dictAt + i];
+      if (filled < stride) continue;
+      filled = 0;
+      for (size_t k = 1; k < stride; k++) {   // undo the row's filter
+        const int a = k > (size_t)ch ? cur[k - ch] : 0, b = y ? prev[k] : 0, c = y && k > (size_t)ch ? prev[k - ch] : 0;
+        const int p = a + b - c, pa = abs(p - a), pb = abs(p - b), pc = abs(p - c);
+        if (cur[0] == 1) cur[k] += a;
+        else if (cur[0] == 2) cur[k] += b;
+        else if (cur[0] == 3) cur[k] += (a + b) / 2;
+        else if (cur[0] == 4) cur[k] += pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+        else if (cur[0] != 0) ok = false;
+      }
+      uint16_t line[GH_AVATAR_SIZE];
+      for (int x = 0; x < GH_AVATAR_SIZE; x++) {   // only the pixels the page samples
+        const uint8_t *px = cur + 1 + avatarFrom(x, w) * ch;
+        const uint8_t *rgba = type == 3 ? palette[px[0]] : nullptr;
+        int r = rgba ? rgba[0] : px[0], g = rgba ? rgba[1] : ch >= 3 ? px[1] : px[0], bl = rgba ? rgba[2] : ch >= 3 ? px[2] : px[0];
+        const int alpha = rgba ? rgba[3] : ch == 2 ? px[1] : ch == 4 ? px[3] : 255;
+        r = r * alpha / 255, g = g * alpha / 255, bl = bl * alpha / 255;
+        line[x] = (r & 0xF8) << 8 | (g & 0xFC) << 3 | bl >> 3;
+      }
+      for (int py = 0; py < GH_AVATAR_SIZE; py++)
+        if (avatarFrom(py, h) == (int)y) avatarRow(py, 0, line, GH_AVATAR_SIZE);
+      std::swap(cur, prev);
+      y++;
+    }
+    dictAt = (dictAt + outLen) & (TINFL_LZ_DICT_SIZE - 1);
+    if (status != TINFL_STATUS_HAS_MORE_OUTPUT) {
+      if (ok && (status != TINFL_STATUS_DONE || y != h)) snprintf(avatarWhy, sizeof(avatarWhy), "inflate %d at row %u", (int)status, (unsigned)y);
+      ok = ok && status == TINFL_STATUS_DONE && y == h;
+      break;
+    }
+  }
+  free(inflator);
+  free(row);
+  free(dict);
+  free(zipped);
+  return ok;
+}
+
+// True when the saved picture is not this user's, or is a day old; never for the app's own.
+static bool avatarStale(const char *user) {
+  File f = LittleFS.exists(AVATAR_PATH) ? LittleFS.open(AVATAR_PATH, "r") : File();
+  AvatarHead head = {};
+  const bool read = f && f.read((uint8_t *)&head, sizeof(head)) == sizeof(head);
+  if (f) f.close();
+  const time_t now = time(nullptr);
+  if (read && avatarIsOwn(head)) return false;
+  return !read || strncmp(head.user, user, sizeof(head.user)) != 0 || (now > 1700000000 && now - (time_t)head.at > 86400);
+}
+
+// The picture at `url` (the profile's avatar_url) at the page's size, in a
+// malloc'd buffer the caller frees; nullptr on failure. Its own function, so the
+// TLS connection's memory is all back before the decoder asks for its own.
+static uint8_t *downloadAvatar(const char *url, int &code, int &len) {
+  WiFiClientSecure client;
+  client.useBuiltinCACertBundle();
+  client.setHandshakeTimeout(TLS_HANDSHAKE_TIMEOUT_S);
+  HTTPClient http;
+  http.setTimeout(HTTP_TIMEOUT_MS);
+  http.setConnectTimeout(HTTP_CONNECT_TIMEOUT_MS);
+  char sized[200];
+  snprintf(sized, sizeof(sized), "%s%cs=%d", url, strchr(url, '?') ? '&' : '?', GH_AVATAR_SIZE);
+  if (!http.begin(client, sized)) return nullptr;
+  http.addHeader("User-Agent", "ESP32-C6-Touch-LCD");
+  code = http.GET();
+  len = code == HTTP_CODE_OK ? http.getSize() : -1;
+  uint8_t *data = len > 8 && len <= 24576 ? (uint8_t *)malloc(len) : nullptr;
+  if (data && http.getStreamPtr()->readBytes(data, len) != (size_t)len) {
+    free(data);
+    data = nullptr;
+  }
+  http.end();
+  return data;
+}
+
+// Fetches the picture for `user` and saves it (AVATAR_PATH).
+static bool fetchAvatar(const char *user, const char *url) {
+  int code = 0, len = 0;
+  uint8_t *data = downloadAvatar(url, code, len);
+  const bool got = data != nullptr;
+  bool ok = false;
+  if (got) {
+    AvatarHead head = {};
+    strlcpy(head.user, user, sizeof(head.user));
+    head.at = (uint32_t)time(nullptr);
+    avatarOut = LittleFS.open(AVATAR_PART, "w");
+    if (avatarOut) {
+      static const uint8_t zeros[256] = {};
+      avatarOut.write((const uint8_t *)&head, sizeof(head));
+      for (size_t n = 0; n < AVATAR_BYTES; n += sizeof(zeros)) avatarOut.write(zeros, min(sizeof(zeros), AVATAR_BYTES - n));
+      if (data[0] == 0xFF && data[1] == 0xD8) {
+        JPEGDEC *jpeg = new (std::nothrow) JPEGDEC;
+        if (jpeg && jpeg->openRAM(data, len, avatarJpegDraw)) {
+          avatarW = jpeg->getWidth(), avatarH = jpeg->getHeight();
+          jpeg->setPixelType(RGB565_LITTLE_ENDIAN);
+          ok = jpeg->decode(0, 0, 0) == 1;
+          jpeg->close();
+        }
+        delete jpeg;
+      } else if (memcmp(data, "\x89PNG", 4) == 0) {
+        ok = avatarPng(data, len);
+      }
+      avatarOut.close();
+    }
+  }
+  free(data);
+  ok = ok && avatarStale(user);   // a picture the app sent meanwhile stays
+  if (ok) {
+    LittleFS.remove(AVATAR_PATH);
+    ok = LittleFS.rename(AVATAR_PART, AVATAR_PATH);
+    avatarOnFile = ok;
+  } else {
+    LittleFS.remove(AVATAR_PART);
+  }
+  Serial.printf("[net] github picture for %s: %s%s (HTTP %d, %d bytes, %u free, largest %u)\n", user,
+                ok ? "saved" : got ? "could not decode: " : "not fetched", ok ? "" : avatarWhy, code, len, (unsigned)ESP.getFreeHeap(),
+                (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+  return ok;
+}
+#endif
+
 // Three public, token-free requests: the profile (followers, repos), the repo
 // list (stars) and the contribution calendar (streak, today). A part that
 // succeeded is not asked for again until all three are in, so a retry costs
@@ -1810,6 +2063,7 @@ bool fetchGithub() {
   static GithubData g = {};
   static bool userDone = false, starsDone = false, activityDone = false;
   const String user = settings.githubUser;
+  char picture[160] = "";   // the profile's avatar_url, fetched once the JSON is freed
 
   if (!userDone) {
     String body;
@@ -1820,6 +2074,7 @@ bool fetchGithub() {
       g.repos     = doc["public_repos"].as<int>();
       g.valid     = true;
       userDone    = true;
+      strlcpy(picture, doc["avatar_url"] | "", sizeof(picture));
     }
   }
   if (!starsDone) {
@@ -1850,6 +2105,9 @@ bool fetchGithub() {
     }
   }
 
+#ifndef MBSIM
+  if (picture[0] && avatarStale(user.c_str())) fetchAvatar(user.c_str(), picture);
+#endif
   const bool all = userDone && starsDone && activityDone;
   if (all) {
     g.updatedAt = millis();
@@ -2526,6 +2784,19 @@ void drawClock() {
 
 // ── Date page ─────────────────────────────────────────────
 
+// Gym streak from the PC (link packet 'Y' + JSON {"streak":N,"pr":"..."}).
+// Shown small on the Date page only; hidden when nothing came for 48 h.
+struct GymState { bool known; int streak; char pr[28]; uint32_t at; };
+GymState gym = {};
+static const uint32_t GYM_STALE_MS = 48UL * 3600UL * 1000UL;
+bool gymFresh() { return gym.known && millisSince(gym.at) < GYM_STALE_MS; }
+void gymFromPc(JsonDocument &body) {
+  gym.streak = body["streak"] | 0;
+  odooAscii(body["pr"] | "", gym.pr, sizeof(gym.pr), sizeof(gym.pr) - 1);
+  gym.known = true;
+  gym.at = millis();
+}
+
 void drawDatePage() {
   static const char *wd[]  = {"SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"};
   static const char *mon[] = {"JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"};
@@ -2537,8 +2808,17 @@ void drawDatePage() {
   char line[24];
   snprintf(line, sizeof(line), "%s %02u", mon[month-1], day);
   centeredTextColor(line, 62, 6, COL_DATE_BIG);
-  snprintf(line, sizeof(line), "%ld", (long)year);
-  centeredTextColor(line, 126, 3, COL_VALUE);
+  if (gymFresh()) {   // year smaller, gym line under it
+    snprintf(line, sizeof(line), "%ld", (long)year);
+    centeredTextColor(line, 116, 2, COL_VALUE);
+    char gymLine[48];
+    if (gym.pr[0]) snprintf(gymLine, sizeof(gymLine), "GYM %d  PR %s", gym.streak, gym.pr);
+    else           snprintf(gymLine, sizeof(gymLine), "GYM STREAK %d", gym.streak);
+    centeredTextColor(gymLine, 138, 2, rgb(120, 220, 140));
+  } else {
+    snprintf(line, sizeof(line), "%ld", (long)year);
+    centeredTextColor(line, 126, 3, COL_VALUE);
+  }
   drawPageDots();
 }
 
@@ -2895,7 +3175,8 @@ void drawGithub() {
   // Profile picture on the left inside an animated ring. The whole canvas is
   // redrawn every frame, so the animation is just a function of millis().
   const int cx = 60, cy = 60, half = GH_AVATAR_SIZE / 2;
-  gfx->draw16bitRGBBitmap(cx - half, cy - half, (uint16_t *)gh_avatar, GH_AVATAR_SIZE, GH_AVATAR_SIZE);
+  if (!drawAvatar(cx - half, cy - half))
+    gfx->draw16bitRGBBitmap(cx - half, cy - half, (uint16_t *)gh_avatar, GH_AVATAR_SIZE, GH_AVATAR_SIZE);
   const bool doneToday = g.haveActivity && g.today > 0;
   const uint32_t ms = millis();
   // The ring breathes while today's contribution is in, and sits dim until then.
@@ -4650,8 +4931,10 @@ void mbState(JsonDocument &body) {
 //   B size(4) sig      begin a firmware update of `size` bytes; sig: its ECDSA P-256
 //                      signature (DER) by the key UPDATE_KEY is the public half of
 //   F size(4) name     begin an animation for GIF_DIR, `name` like starfield.gif
-//   D offset(4) bytes  the next piece of the update or animation
+//   A size(4)          begin the GitHub page's own picture; size 0 takes it away: linkPicture()
+//   D offset(4) bytes  the next piece of the update, animation or picture
 //   X name             remove that animation
+//   L                  the animations there: linkGifList()
 // Every other command stays on USB.
 #define LINK_PORT           4747
 #define LINK_PACKET_MAX     1400
@@ -4865,6 +5148,61 @@ static void linkGif(uint32_t size, const uint8_t *name, int len) {
   gifScan(card);
 }
 
+// The picture the app sends for the GitHub page: AVATAR_BYTES of RGB565, row by
+// row, kept as AVATAR_PATH under the name AVATAR_OWN. Size 0 removes it, and the
+// GitHub picture is fetched again.
+static void linkPicture(uint32_t size) {
+  static const char *const PART = "/own.part";   // fetchAvatar() writes AVATAR_PART meanwhile
+  if (size == 0) {
+    LittleFS.remove(AVATAR_PATH);
+    avatarOnFile = 0;
+    githubAgain = true;
+    linkAnswer();
+    return;
+  }
+  if (size != AVATAR_BYTES || !(linkFile = LittleFS.open(PART, "w"))) return;
+  AvatarHead head = {};
+  strlcpy(head.user, AVATAR_OWN, sizeof(head.user));
+  head.at = (uint32_t)time(nullptr);
+  linkFile.write((const uint8_t *)&head, sizeof(head));
+  uint32_t written = 0;
+  linkAnswer();
+  const bool whole = linkTake(size, written, "RECEIVING", linkToFile);
+  linkFile.close();
+  if (whole) {
+    LittleFS.remove(AVATAR_PATH);
+    avatarOnFile = LittleFS.rename(PART, AVATAR_PATH);
+    if (avatarOnFile) linkAnswer();
+  } else {
+    LittleFS.remove(PART);
+  }
+}
+
+// The animations in GIF_DIR as {"gifs": [[name, bytes], ...], "free_kb": room
+// left}, as many as one answer holds.
+static void linkGifList() {
+  JsonDocument doc;
+  JsonArray list = doc["gifs"].to<JsonArray>();
+  File dir = gifFs->open(GIF_DIR);
+  for (File entry = dir ? dir.openNextFile() : File(); entry; entry = dir.openNextFile()) {
+    if (!String(entry.name()).endsWith(".gif")) continue;
+    JsonArray one = list.add<JsonArray>();
+    one.add(entry.name());
+    one.add((uint32_t)entry.size());
+    // shortcut: one answer holds about 25 names; ask from an offset when a card holds more
+    if (measureJson(doc) > LINK_PACKET_MAX - 11 - 48) {
+      list.remove(list.size() - 1);
+      doc["more"] = true;
+      break;
+    }
+  }
+  doc["free_kb"] = gifFs == &LittleFS ? (uint32_t)((LittleFS.totalBytes() - LittleFS.usedBytes()) >> 10)
+                                      : (uint32_t)((SD.totalBytes() - SD.usedBytes()) >> 10);
+  String text;
+  serializeJson(doc, text);
+  linkAnswer(text.c_str());
+}
+
 // How the Buddy is doing, for tools/buddy_check.py.
 static String healthJson() {
   JsonDocument doc;
@@ -4893,6 +5231,35 @@ static String healthJson() {
   return text;
 }
 
+// The PC's address, from its last sealed packet and kept over restarts. When
+// the PC has gone quiet, the Buddy tells it where it is: a new address from the
+// router then finds the link again without USB. A hello is sealed like the rest,
+// names the Buddy's address and the time, and starts with 0x40, a nonce byte
+// neither the PC's clock (0x00) nor an answer (0x80) uses.
+static const char *const LINK_PC_PATH = "/pc-ip";
+static uint32_t linkPc = 0, linkHeardAt = 0;
+
+static void linkHello() {
+  static uint32_t saidAt = 0;
+  const uint32_t quiet = linkHeardAt ? millisSince(linkHeardAt) : UINT32_MAX;
+  if (!linkPc || quiet < 60000UL || time(nullptr) < 1700000000) return;
+  if (saidAt && millisSince(saidAt) < (quiet > 600000UL ? 300000UL : 30000UL)) return;
+  saidAt = millis() | 1;
+  uint8_t text[48], sealed[12 + sizeof(text) + 16];
+  const int len = snprintf((char *)text, sizeof(text), "hello %s %ld", WiFi.localIP().toString().c_str(), (long)time(nullptr));
+  for (int i = 0; i < 12; i += 4) {
+    const uint32_t random = esp_random();
+    memcpy(sealed + i, &random, 4);
+  }
+  sealed[0] = 0x40;
+  if (mbedtls_gcm_crypt_and_tag(&linkGcm, MBEDTLS_GCM_ENCRYPT, len, sealed, 12, nullptr, 0,
+                                text, sealed + 12, 16, sealed + 12 + len) == 0
+      && linkUdp.beginPacket(IPAddress(linkPc), LINK_PORT)) {
+    linkUdp.write(sealed, 12 + len + 16);
+    linkUdp.endPacket();
+  }
+}
+
 void serviceLink() {
   static bool listening = false, onTrial = false;
   if (!listening) {
@@ -4907,14 +5274,33 @@ void serviceLink() {
     onTrial = esp_ota_get_state_partition(esp_ota_get_running_partition(), &slot) == ESP_OK
               && slot == ESP_OTA_IMG_PENDING_VERIFY;
     listening = true;
+    if (LittleFS.exists(LINK_PC_PATH)) {
+      File f = LittleFS.open(LINK_PC_PATH, "r");
+      f.read((uint8_t *)&linkPc, sizeof(linkPc));
+      f.close();
+    }
     Serial.printf("link: listening on UDP %d%s\n", LINK_PORT, onTrial ? ", new firmware on trial" : "");
   }
   if (update.open && update.pausedAt && millisSince(update.pausedAt) > UPDATE_RESUME_MS) {
     Serial.println("link: paused update given up");
     updateClose();
   }
+#ifndef MBSIM   // shortcut: the simulator's golden pictures are timing-exact (flash writes, seeded esp_random), so the hello runs only on the board; tested by tools/test_buddy_link.py and on the board
+  linkHello();
+#endif
   const int len = linkRead();
   if (len < 0) return;
+  linkHeardAt = millis() | 1;
+#ifndef MBSIM
+  if ((uint32_t)linkUdp.remoteIP() != linkPc) {
+    linkPc = linkUdp.remoteIP();
+    File f = LittleFS.open(LINK_PC_PATH, "w");
+    if (f) {
+      f.write((const uint8_t *)&linkPc, sizeof(linkPc));
+      f.close();
+    }
+  }
+#endif
   if (onTrial) {
     onTrial = false;
     esp_ota_mark_app_valid_cancel_rollback();
@@ -4944,6 +5330,11 @@ void serviceLink() {
     if (deserializeJson(body, (const char *)linkText + 1, len - 1) != DeserializationError::Ok) return;
     odooFromPc(body);
     linkAnswer();
+  } else if (len > 1 && linkText[0] == 'Y') {
+    JsonDocument body;
+    if (deserializeJson(body, (const char *)linkText + 1, len - 1) != DeserializationError::Ok) return;
+    gymFromPc(body);
+    linkAnswer();
   } else if (len > 1 && linkText[0] == 'S') {
     linkText[len] = '\0';
     noticeShow((const char *)linkText + 1);
@@ -4952,6 +5343,10 @@ void serviceLink() {
     linkUpdate(linkNumber(linkText + 1), linkText + 5, len - 5);
   } else if (len > 5 && linkText[0] == 'F') {
     linkGif(linkNumber(linkText + 1), linkText + 5, len - 5);
+  } else if (len == 5 && linkText[0] == 'A') {
+    linkPicture(linkNumber(linkText + 1));
+  } else if (len == 1 && linkText[0] == 'L') {
+    linkGifList();
   } else if (linkText[0] == 'X') {
     char path[64];
     if (!linkGifPath(linkText + 1, len - 1, path, sizeof(path))) return;
@@ -5869,9 +6264,10 @@ void netTask(void *) {
       runFetch("weather", fetchWeather, weatherPacer, now, 0, FETCH_RETRY_MS);
       ran = usedTls = true;
     } else if (settings.pages[PAGE_GITHUB] && githubConfigured()
-        && (!netShared.github.valid || !netShared.github.haveStars || !netShared.github.haveActivity
+        && (!netShared.github.valid || !netShared.github.haveStars || !netShared.github.haveActivity || githubAgain
             || now - netShared.github.updatedAt >= GITHUB_REFRESH_INTERVAL_MS)
         && githubPacer.ready(now)) {
+      githubAgain = false;
       runFetch("github", fetchGithub, githubPacer, now, 0, GITHUB_RETRY_MAX_MS);
       ran = usedTls = true;
     }

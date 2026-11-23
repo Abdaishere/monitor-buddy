@@ -17,6 +17,7 @@ Monitor Buddy is a fork. Most of what makes it nice was there before me, so than
 | [ArduinoJson](https://arduinojson.org/) | Benoît Blanchon | MIT |
 | [U8g2](https://github.com/olikraus/u8g2) and its fonts | olikraus | BSD-2-Clause for the code. Fonts used: Helvetica Bold 10, 12 and 14 (X11 fonts, notice of Adobe Systems and Digital Equipment Corporation) and Logisoso 16, 22, 28 and 38 by Mathieu Gabiot (SIL OFL 1.1) |
 | [AnimatedGIF](https://github.com/bitbank2/AnimatedGIF) | Larry Bank, BitBank Software | Apache-2.0 |
+| [JPEGDEC](https://github.com/bitbank2/JPEGDEC) | Larry Bank, BitBank Software | Apache-2.0 |
 | [AyresWiFiManager](https://github.com/ayresnet/AyresWiFiManager), [IdefixRC fork](https://github.com/IdefixRC/AyresWiFiManager) | Daniel Salgado (AyresNet); fork by IdefixRC | MIT |
 | [Unity](https://github.com/ThrowTheSwitch/Unity) (unit tests) | Mike Karlesky, Mark VanderVoord, Greg Williams | MIT |
 | Arduino core for ESP32 and ESP-IDF, through the [pioarduino](https://github.com/pioarduino) platform | Espressif and the pioarduino community | Arduino core LGPL-2.1, ESP-IDF Apache-2.0 |

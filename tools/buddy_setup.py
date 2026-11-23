@@ -23,19 +23,25 @@ is already done, so a second run only does what is left:
   6. looks which desktop features this computer can feed (screen lock,
      microphone, pull requests, calendar) and says so, instead of failing;
   7. asks once about the optional parts: Odoo (Chrome), Claude Code, fish;
-  8. checks the Wi-Fi link and prints what works and what is left.
+  8. checks the Wi-Fi link and, asked once, lets the Buddy's hello through the
+     firewall (ufw) from its network, so a new address from the router finds
+     the helper without USB; then prints what works and what is left.
 
 The answers to the questions are kept in ~/.config/monitor-buddy/setup.json.
 The firmware itself is installed from the browser: see "Set up" in README.md.
 """
 import argparse
 import glob
+import ipaddress
+
 try:
     import grp
 except ImportError:   # not Linux: the app (tools/buddy_app.py) still uses Board from here
     grp = None
 import json
 import os
+import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -47,6 +53,7 @@ UNIT = 'buddy-link.service'
 ODOO_HOST = 'com.monitor_buddy.odoo'
 ODOO_EXTENSION = 'hpfaofllppcbcopbdbanihdnfnbkcgad'   # pinned by the key in tools/chrome-odoo/manifest.json
 INSTALLER = 'https://abdaishere.github.io/monitor-buddy/'
+HELLO_RULE = 'Monitor Buddy hello'   # the comment on the firewall rule
 # Claude Code hooks: (event, matcher or None for all, what buddy_claude_hook.py is told)
 CLAUDE_HOOKS = (
     ('Notification', 'permission_prompt|elicitation_dialog', 'needs'),
@@ -181,6 +188,35 @@ class Setup:
         except KeyError:
             listed = False
         return mine, listed
+
+    def firewall_blocks(self):
+        """True when ufw is on and drops what nobody asked for (read without root)."""
+        def setting(path, name):
+            try:
+                with open(path) as file:
+                    found = re.search(rf'^{name}\s*=\s*"?(\w+)', file.read(), re.M)
+            except OSError:
+                return ''
+            return found[1] if found else ''
+        return bool(self.which('ufw')) and setting('/etc/ufw/ufw.conf', 'ENABLED') == 'yes' \
+            and setting('/etc/default/ufw', 'DEFAULT_INPUT_POLICY') in ('DROP', 'REJECT')
+
+    def network(self):
+        """(interface, network) this computer reaches the Buddy through, like
+        ('wlan0', '192.168.1.0/24'), or None before its address is known."""
+        import buddy_link
+        try:
+            with open(buddy_link.ADDRESS_FILE) as file:
+                address = file.read().strip()
+        except OSError:
+            return None
+        code, route = self.run('ip', '-4', '-o', 'route', 'get', address)
+        found = re.search(r'\bdev (\S+) .*\bsrc (\S+)', route)
+        if code or not found:
+            return None
+        code, addresses = self.run('ip', '-4', '-o', 'addr', 'show', 'dev', found[1])
+        mine = re.search(rf'inet ({re.escape(found[2])}/\d+)', addresses)
+        return (found[1], str(ipaddress.ip_interface(mine[1]).network)) if not code and mine else None
 
     # ── small helpers ─────────────────────────────────────────────────────
     def say(self, text=''):
@@ -638,6 +674,44 @@ class Setup:
             self.todo('The Buddy did not answer over Wi-Fi.',
                       'Check that the Buddy and this computer are on the same network. If the Buddy changed network, plug it in by USB for a minute so the helper learns the new address.')
 
+    def firewall_rule(self, interface, network):
+        import buddy_link
+        return ['ufw', 'allow', 'in', 'on', interface, 'from', network, 'to', 'any', 'port', str(buddy_link.LINK_PORT), 'proto', 'udp']
+
+    def allow_hellos(self):
+        """Lets the Buddy's hello (linkHello() in src/main.cpp) through ufw from the
+        Buddy's network: when the router gives the Buddy a new address, the hello
+        tells the helper, without the USB cable."""
+        if not self.firewall_blocks():
+            return
+        net = self.network()
+        if not net:
+            self.info('firewall: looked at once this computer knows the Buddy\'s address')
+            return
+        interface, network = net
+        if self.state['done'].get('firewall') == f'{interface} {network}':
+            self.ok(f'the firewall lets the Buddy\'s hello in from {network}')
+            self.works.append('A new address from the router: the Buddy tells this computer by itself')
+            return
+        asked = 'firewall' in self.state['answers']
+        if not self.wants('firewall', f'Let the Buddy tell this computer when the router gives it a new address? '
+                                      f'The firewall then lets UDP port 4747 in from {network}, and asks for your password.'):
+            if asked:
+                self.info('firewall: closed to the Buddy\'s hello. If the Buddy gets a new address, plug it in by USB for a minute')
+            return
+        rule = self.firewall_rule(interface, network) + ['comment', HELLO_RULE]
+        if self.dry:
+            self.would(f'let UDP 4747 in from {network} on {interface} (ufw; it asks for your password)')
+            return
+        elevate = 'sudo' if self.interactive else 'pkexec'   # the app has no terminal: pkexec shows a password window
+        if not self.which(elevate) or self.run(elevate, *rule, timeout=300)[0] != 0:
+            self.todo('The firewall still drops the Buddy\'s hello.', 'In a terminal:   sudo ' + shlex.join(rule))
+            return
+        self.state['done']['firewall'] = f'{interface} {network}'
+        self._save_state()
+        self.ok(f'the firewall lets the Buddy\'s hello in from {network}')
+        self.works.append('A new address from the router: the Buddy tells this computer by itself')
+
     def undo(self):
         """Takes this computer's side away again: the helper, the commands and the hooks this setup wrote.
         The keys stay (the Buddy still holds their other halves) unless forget_keys is set."""
@@ -684,6 +758,17 @@ class Setup:
                     self.ok('Claude Code: the Monitor Buddy hooks are gone (the file as it was: settings.json.bak)')
         if self.which('systemctl') and not self.dry:
             self.run('systemctl', '--user', 'daemon-reload')
+        if opened := self.state['done'].get('firewall'):
+            rule = ['ufw', 'delete'] + self.firewall_rule(*opened.split())[1:]
+            elevate = 'sudo' if self.interactive else 'pkexec'
+            if self.dry:
+                self.would(f'take the firewall rule for the Buddy\'s hello out ({opened})')
+            elif self.which(elevate) and self.run(elevate, *rule, timeout=300)[0] == 0:
+                del self.state['done']['firewall']
+                self._save_state()
+                self.ok('the firewall rule for the Buddy\'s hello is gone')
+            else:
+                self.info('the firewall rule for the Buddy\'s hello stays; to take it out:   sudo ' + shlex.join(rule))
         keys = os.path.join(self.home, '.config', 'monitor-buddy')
         if self.forget_keys and os.path.isdir(keys):
             self.would(f'delete the keys and answers in {keys}') if self.dry else (shutil.rmtree(keys), self.ok('the keys and the saved answers are deleted'))
@@ -721,6 +806,7 @@ class Setup:
             self.look_at_desktop()
             self.optional_parts()
             self.check_link()
+            self.allow_hellos()
         except Stop as stop:
             self.say(f'\n  ! {stop}')
             return 1

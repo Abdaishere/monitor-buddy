@@ -128,6 +128,8 @@ What the preview cannot know: prices, weather and the work pages (work hours, pu
 
 ![The app's Say something tab](docs/images/setup/app-4-say.png)
 
+**Pictures.** The fourth tab puts your own picture on the GitHub page instead of your GitHub one (and back), and adds or removes the animations of the GIF page. Any GIF will do: it is made to fit the screen first. Both go over Wi-Fi, so the cable can stay out.
+
 **From Chrome.** With the "Chrome extension" box ticked, setup tells you how to add the extension; its toolbar button opens a small box that shows a line on the Buddy, with the same quick buttons.
 
 **Removing it.** Uninstall "monitor-buddy" in your software centre. To also take the background helper and the hooks out of your account, run `monitor-buddy-setup --undo` first (from the ZIP: `./setup.sh --undo`). Your keys stay unless you add `--forget-keys`.
@@ -137,7 +139,7 @@ Prefer a terminal? `./setup.sh` does the same setup, and `buddy-say tea is ready
 - makes two secret keys **on your computer** and gives them to the Buddy over the USB cable. They are never shown, never sent over Wi-Fi and never leave your machine;
 - starts a small helper in the background that tells the Buddy what your computer is doing;
 - adds the app to your app menu, and the `buddy-say` command;
-- sets up the optional parts you chose: work hours and tasks (Chrome), Claude Code sessions, the fish shell hook.
+- sets up the optional parts you chose: work hours and tasks (Chrome), Claude Code sessions, the fish shell hook, and a firewall opening (UDP 4747, from the Buddy's network only) so that when the router gives the Buddy a new address, it tells your computer by itself instead of needing the USB cable.
 
 Things worth knowing:
 
@@ -201,7 +203,7 @@ Settings and keys live on the board, not in the build: `config/config.h` (copy i
 
 - **The original**: [Monitor-Buddy](https://github.com/IdefixRC/Monitor-Buddy) by [IdefixRC](https://github.com/IdefixRC) and its contributors [AmyJoT](https://github.com/AmyJoT) and [Killo1988](https://github.com/Killo1988), MIT licence. The base firmware, the settings engine, the web flasher and the [printed holder](https://makerworld.com/en/models/3241960-monitor-buddy).
 - **Where the original came from**: the Tiny ESP DeskBuddy idea from [schematik.io](https://schematik.io/) and additional face designs from [DESKBUDDY-1.0](https://github.com/EDISON-SCIENCE-CORNER/DESKBUDDY-1.0) by Edison Science Corner.
-- **Firmware libraries**: [Arduino_GFX](https://github.com/moononournation/Arduino_GFX), [ArduinoJson](https://arduinojson.org/), [U8g2](https://github.com/olikraus/u8g2) and its fonts, [AnimatedGIF](https://github.com/bitbank2/AnimatedGIF), [AyresWiFiManager](https://github.com/ayresnet/AyresWiFiManager) in the [IdefixRC fork](https://github.com/IdefixRC/AyresWiFiManager), [Unity](https://github.com/ThrowTheSwitch/Unity), and the Arduino core for ESP32 through [pioarduino](https://github.com/pioarduino).
+- **Firmware libraries**: [Arduino_GFX](https://github.com/moononournation/Arduino_GFX), [ArduinoJson](https://arduinojson.org/), [U8g2](https://github.com/olikraus/u8g2) and its fonts, [AnimatedGIF](https://github.com/bitbank2/AnimatedGIF), [JPEGDEC](https://github.com/bitbank2/JPEGDEC), [AyresWiFiManager](https://github.com/ayresnet/AyresWiFiManager) in the [IdefixRC fork](https://github.com/IdefixRC/AyresWiFiManager), [Unity](https://github.com/ThrowTheSwitch/Unity), and the Arduino core for ESP32 through [pioarduino](https://github.com/pioarduino).
 - **Browser installer**: [esptool-js](https://github.com/espressif/esptool-js) by Espressif (Apache-2.0) and [posix_tz_db](https://github.com/nayarsystems/posix_tz_db) by Nayar Systems (MIT).
 - **Laptop tools**: [cryptography](https://cryptography.io/), [python-dateutil](https://github.com/dateutil/dateutil), [Pillow](https://python-pillow.org/), [pyserial](https://github.com/pyserial/pyserial) and the [GitHub CLI](https://cli.github.com/).
 - **Data**: weather and the city search by [Open-Meteo](https://open-meteo.com/) (CC BY 4.0), stock quotes by [Finnhub](https://finnhub.io/), coin prices by [Coinbase](https://www.coinbase.com/).

@@ -85,6 +85,10 @@
   ul.backups li { display: flex; justify-content: space-between; align-items: center; padding-left: 0; }
   details summary { cursor: pointer; }
   @media (max-width: 860px) { .editor { grid-template-columns: 1fr; } .stage { position: static; } }
+  .picture { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  .picture canvas { width: 88px; height: 88px; border-radius: 50%; background: #000; flex: none; }
+  ul.gifs li { display: flex; justify-content: space-between; align-items: center; gap: .6rem; padding: .3rem 0; border-bottom: 1px solid var(--border); }
+  ul.gifs li span { min-width: 0; overflow-wrap: anywhere; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -96,6 +100,7 @@
     <button role="tab" id="tab-setup" aria-selected="true">Set up</button>
     <button role="tab" id="tab-yours" aria-selected="false">Make it yours</button>
     <button role="tab" id="tab-say" aria-selected="false">Say something</button>
+    <button role="tab" id="tab-pictures" aria-selected="false">Pictures</button>
   </div>
 
   <section id="setup">
@@ -129,6 +134,7 @@
         <label class="tick"><input type="checkbox" id="odoo"><span>Chrome extension<small>A toolbar button to show a line on the Buddy, and for accounts on www.odoo.com your hours and tasks. One step in Chrome is left for you; setup says which.</small></span></label>
         <label class="tick"><input type="checkbox" id="claude"><span>Claude Code sessions<small>The Buddy shows when a session waits for you or has finished.</small></span></label>
         <label class="tick"><input type="checkbox" id="fish"><span>Long terminal commands (fish shell)<small>The Buddy says DONE or FAILED when a command that ran over a minute ends.</small></span></label>
+        <label class="tick"><input type="checkbox" id="firewall"><span>Find the Buddy again after a new address<small>When the router gives the Buddy a new address, it tells this computer by itself, no USB cable needed. The firewall lets that one sealed message in (UDP port 4747, from the Buddy's network only); it asks for your password once.</small></span></label>
         <label class="tick" id="repair-row" hidden><input type="checkbox" id="repair"><span>This Buddy was paired with another computer: pair it with this one instead<small>The other computer can then no longer reach it.</small></span></label>
         <p class="muted">Parts this computer cannot use are skipped by themselves, with a note.</p>
       </div>
@@ -200,6 +206,28 @@
       <p class="muted">It stays on the screen for 20 seconds; a tap on the Buddy puts it away. About 100 characters fit.</p>
     </div>
   </section>
+
+  <section id="pictures" hidden>
+    <div class="card">
+      <h2>Your picture on the GitHub page</h2>
+      <div class="picture">
+        <canvas id="pic" width="88" height="88" aria-label="The picture as the Buddy will show it"></canvas>
+        <div>
+          <p><input type="file" id="pic-file" accept="image/*" aria-label="Choose a picture"></p>
+          <p><button class="go" id="pic-send" disabled>Put it on the Buddy</button> <button type="button" class="plain" id="pic-github">Back to the GitHub picture</button></p>
+        </div>
+      </div>
+      <p id="pic-result" role="status"></p>
+      <p class="muted">The middle of the picture, cut to a circle. It stays instead of the GitHub picture until you go back.</p>
+    </div>
+    <div class="card">
+      <h2>Animations</h2>
+      <ul class="list gifs" id="gif-list"></ul>
+      <p><label>Add GIFs: <input type="file" id="gif-file" accept="image/gif" multiple></label></p>
+      <p id="gif-result" role="status"></p>
+      <p class="muted">The Buddy plays one on each visit of its GIF page. Each is made to fit its screen on this computer before it is sent over Wi-Fi.</p>
+    </div>
+  </section>
 </main>
 <script>
 "use strict";
@@ -220,7 +248,7 @@ async function api(path, body) {
 
 function expired() {
   closed = true;
-  for (const id of ["needs", "ready", "running", "summary", "yours", "say", "no-helper"]) $(id).hidden = true;
+  for (const id of ["needs", "ready", "running", "summary", "yours", "say", "pictures", "no-helper"]) $(id).hidden = true;
   show("setup");
   $("closed").hidden = false;
 }
@@ -270,7 +298,7 @@ async function loadStatus() {
   }
   $("needs").hidden = true;
   $("ready").hidden = false;
-  for (const name of ["odoo", "claude", "fish"]) $(name).checked = status.answers[name];
+  for (const name of ["odoo", "claude", "fish", "firewall"]) $(name).checked = status.answers[name];
   $("repair-row").hidden = !status.left.some((l) => l.text.includes("another computer"));
   $("again").hidden = !status.done_before;
   if (status.done_before) drawSummary(status.works, status.left);
@@ -300,7 +328,7 @@ $("start").addEventListener("click", async () => {
   drawSteps([]);
   let answer;
   try {
-    answer = await api("/api/setup", { odoo: $("odoo").checked, claude: $("claude").checked, fish: $("fish").checked, repair: $("repair").checked });
+    answer = await api("/api/setup", { odoo: $("odoo").checked, claude: $("claude").checked, fish: $("fish").checked, firewall: $("firewall").checked, repair: $("repair").checked });
   } catch { return expired(); }
   if (!answer.ok) { $("failed").textContent = answer.error; $("start").disabled = false; return; }
   watch();
@@ -935,21 +963,108 @@ $("yours-earlier").addEventListener("toggle", async () => {
 });
 wireScreen();
 
+// ── Pictures: the GitHub page's picture and the animations, over Wi-Fi like a line ──
+const base64 = (bytes) => {
+  let text = "";
+  for (let at = 0; at < bytes.length; at += 8192) text += String.fromCharCode(...bytes.subarray(at, at + 8192));
+  return btoa(text);
+};
+function said(id, answer, done) {
+  $(id).className = answer.ok ? "" : "error";
+  $(id).textContent = answer.ok ? done : answer.error;
+}
+
+$("pic-file").addEventListener("change", async () => {
+  const file = $("pic-file").files[0];
+  const context = $("pic").getContext("2d");
+  context.fillStyle = "#000";
+  context.fillRect(0, 0, 88, 88);
+  $("pic-send").disabled = true;
+  if (!file) return;
+  try {
+    const image = await createImageBitmap(file);
+    const side = Math.min(image.width, image.height);   // the middle square
+    context.drawImage(image, (image.width - side) / 2, (image.height - side) / 2, side, side, 0, 0, 88, 88);
+    $("pic-send").disabled = false;
+    $("pic-result").textContent = "";
+  } catch {
+    said("pic-result", { ok: false, error: "This browser cannot read that picture." });
+  }
+});
+async function sendPicture(data) {
+  $("pic-send").disabled = $("pic-github").disabled = true;
+  $("pic-result").className = "muted";
+  $("pic-result").textContent = "Sending…";
+  let answer;
+  try { answer = await api("/api/picture", { data }); } catch { return expired(); } finally { $("pic-github").disabled = false; $("pic-send").disabled = !$("pic-file").files.length; }
+  said("pic-result", answer, data ? "On the GitHub page now." : "The Buddy fetches the GitHub picture again; it shows within a minute.");
+}
+$("pic-send").addEventListener("click", () => {
+  const rgba = $("pic").getContext("2d").getImageData(0, 0, 88, 88).data;
+  const pixels = new Uint8Array(88 * 88 * 2);   // RGB565, little-endian, as the Buddy's screen holds it
+  for (let i = 0; i < 88 * 88; i++) {
+    const value = (rgba[i * 4] >> 3) << 11 | (rgba[i * 4 + 1] >> 2) << 5 | rgba[i * 4 + 2] >> 3;
+    pixels[i * 2] = value & 255;
+    pixels[i * 2 + 1] = value >> 8;
+  }
+  sendPicture(base64(pixels));
+});
+$("pic-github").addEventListener("click", () => sendPicture(null));
+
+function drawGifs(answer) {
+  if (!answer.ok) return said("gif-result", answer);
+  const rows = answer.gifs.map(([name, bytes]) => {
+    const remove = el("button", { type: "button", className: "plain small", textContent: "Remove" });
+    remove.addEventListener("click", async () => {
+      remove.disabled = true;
+      let done;
+      try { done = await api("/api/gifs/remove", { name }); } catch { return expired(); }
+      said("gif-result", done, `Removed ${name}.`);
+      drawGifs(done.ok ? done : answer);
+    });
+    return el("li", {}, el("span", { textContent: `${name} · ${Math.ceil(bytes / 1024)} KB` }), remove);
+  });
+  if (answer.more) rows.push(el("li", { className: "muted", textContent: "More than fit in one answer; remove some to see the rest." }));
+  $("gif-list").replaceChildren(...(rows.length ? rows : [el("li", { className: "muted", textContent: "None on the Buddy." })]));
+  $("gif-file").title = `${answer.free_kb} KB free`;
+}
+async function loadGifs() {
+  $("gif-result").textContent = "";
+  try { drawGifs(await api("/api/gifs")); } catch { expired(); }
+}
+$("gif-file").addEventListener("change", async () => {
+  const files = [...$("gif-file").files];
+  $("gif-file").disabled = true;
+  for (const file of files) {
+    $("gif-result").className = "muted";
+    $("gif-result").textContent = `Sending ${file.name}…`;
+    let answer;
+    try { answer = await api("/api/gifs/add", { name: file.name, data: base64(new Uint8Array(await file.arrayBuffer())) }); } catch { $("gif-file").disabled = false; return expired(); }
+    said("gif-result", answer, `Added ${answer.added}.`);
+    if (!answer.ok) break;
+    drawGifs(answer);
+  }
+  $("gif-file").disabled = false;
+  $("gif-file").value = "";
+});
+
 function show(tab) {
-  for (const name of ["setup", "yours", "say"]) {
+  for (const name of ["setup", "yours", "say", "pictures"]) {
     $(name).hidden = name !== tab;
     $(`tab-${name}`).setAttribute("aria-selected", String(name === tab));
   }
   document.body.classList.toggle("wide", tab === "yours");
   if (tab === "say") $("say-text").focus();
+  if (tab === "pictures") loadGifs();
   if (tab === "yours" && !held && !$("yours-read").disabled) readSettings();   // straight to the Buddy's settings
 }
 $("tab-setup").addEventListener("click", () => show("setup"));
 $("tab-say").addEventListener("click", () => show("say"));
 $("tab-yours").addEventListener("click", () => show("yours"));
+$("tab-pictures").addEventListener("click", () => show("pictures"));
 
 $("demo").hidden = !hash.has("demo");
-show(["say", "yours"].includes(hash.get("tab")) ? hash.get("tab") : "setup");
+show(["say", "yours", "pictures"].includes(hash.get("tab")) ? hash.get("tab") : "setup");
 loadStatus();
 setInterval(() => { if (!closed) api("/api/ping").catch(expired); }, 20000);   // the app stops a few minutes after the page closes
 </script>

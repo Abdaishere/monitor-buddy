@@ -14,8 +14,8 @@ own; its acknowledgements are carried over in docs/blog/CREDITS.md, together
 with every third-party library, data source and asset this fork uses.
 
 The licence texts of the libraries compiled into the firmware and the live
-preview (AnimatedGIF, U8g2 and its fonts, Arduino_GFX, ArduinoJson,
-AyresWiFiManager, littlefs, the Arduino core for ESP32, ESP-IDF, Emscripten)
+preview (AnimatedGIF, JPEGDEC, U8g2 and its fonts, Arduino_GFX,
+ArduinoJson, AyresWiFiManager, littlefs, the Arduino core for ESP32, ESP-IDF, Emscripten)
 are in THIRD-PARTY-LICENSES.md.
 
 Bundled third-party parts, each under its own licence, kept beside it:

@@ -68,9 +68,12 @@ def open_port(port):
     s.port = port
     s.baudrate = BAUD
     s.timeout = 0.1
-    # Opening with DTR/RTS asserted resets the ESP32-C6 over USB (rst=11).
-    s.dtr = False
-    s.rts = False
+    # Opening with DTR/RTS asserted resets the ESP32-C6 over USB (rst=11) on
+    # Windows. Linux opens with both raised; clearing them passes through
+    # DTR low with RTS high, which resets it too, so there they stay as they are.
+    if os.name == "nt":
+        s.dtr = False
+        s.rts = False
     s.open()
     return s
 

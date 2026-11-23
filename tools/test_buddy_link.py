@@ -72,3 +72,26 @@ class Fit(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class Hello(unittest.TestCase):
+    def setUp(self):
+        self.key = os.urandom(32)
+        self.cipher = bl.AESGCM(self.key)
+
+    def hello(self, text, key=None, first=0x40):
+        nonce = bytes([first]) + os.urandom(11)
+        return nonce + bl.AESGCM(key or self.key).encrypt(nonce, text.encode(), None)
+
+    def test_a_fresh_hello_gives_its_address(self):
+        self.assertEqual(bl.hello_address(self.cipher, self.hello('hello 10.0.0.7 1000'), '10.0.0.7', now=1030), '10.0.0.7')
+
+    def test_refused_when_the_sender_is_not_the_address_named(self):
+        self.assertIsNone(bl.hello_address(self.cipher, self.hello('hello 10.0.0.7 1000'), '10.0.0.9', now=1000))
+
+    def test_refused_when_old_or_sealed_with_another_key(self):
+        self.assertIsNone(bl.hello_address(self.cipher, self.hello('hello 10.0.0.7 1000'), '10.0.0.7', now=1061))
+        self.assertIsNone(bl.hello_address(self.cipher, self.hello('hello 10.0.0.7 1000', key=os.urandom(32)), '10.0.0.7', now=1000))
+
+    def test_refused_without_the_hello_nonce_byte(self):
+        self.assertIsNone(bl.hello_address(self.cipher, self.hello('hello 10.0.0.7 1000', first=0x80), '10.0.0.7', now=1000))

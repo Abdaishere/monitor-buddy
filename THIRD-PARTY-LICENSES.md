@@ -218,6 +218,10 @@ Copyright 2020 BitBank Software, Inc.  All rights reserved.
    limitations under the License.
 ```
 
+## JPEGDEC
+
+Apache License 2.0 (text under AnimatedGIF above). By Larry Bank, BitBank Software. https://github.com/bitbank2/JPEGDEC . Compiled into the firmware, which decodes the GitHub picture with it.
+
 ## U8g2 and the fonts used from it
 
 BSD 2-Clause for the code, by olikraus. https://github.com/olikraus/u8g2 . Compiled into the firmware and the live preview. Fonts used: Helvetica Bold 10, 12 and 14 (`u8g2_font_helvB10_tr`, `helvB12_tr`, `helvB14_tr`; X11 fonts, notice of Adobe Systems and Digital Equipment Corporation in the text below) and Logisoso 16, 22, 28 and 38 (`u8g2_font_logisoso16_tn`, `22`, `28`, `38`; by Mathieu Gabiot, SIL Open Font License 1.1, next section). U8g2's own LICENSE file, as it is:

@@ -183,6 +183,10 @@
       const module = await this.factory({
         wasmBinary: this.wasm,
         noInitialRun: true,
+        // shortcut: the build reads memory whose contents depend on where its stack starts (the coin
+        // page's percent changed with it); argv[0] is pinned to the browser's own, so Node draws what a
+        // browser draws. Find that read when the build is next made.
+        thisProgram: './this.program',
         print: () => {},
         printErr: () => {},
         mbsimHttp: (request) => (sim.options.internet ? sim.internet.serve(request) : null),

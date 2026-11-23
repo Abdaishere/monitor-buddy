@@ -206,6 +206,8 @@ class SetupRun(Home):
         setup.open_board = lambda port: board
         setup.ping = lambda: bool(board and board.link)
         setup.groups = lambda: ({'dialout'}, True)
+        setup.firewall_blocks = lambda: False
+        setup.network = lambda: ('wlan0', '192.168.1.0/24')
         return setup, out
 
     def go(self, *args, **options):
@@ -419,6 +421,48 @@ class SetupRun(Home):
         self.assertTrue(manifest['path'].endswith('tools/buddy_odoo_host.py'))
         self.assertEqual(manifest['allowed_origins'], ['chrome-extension://hpfaofllppcbcopbdbanihdnfnbkcgad/'])
         self.assertIn('Load unpacked', text)
+
+
+class Firewall(SetupRun):
+    """The firewall step: the Buddy's hello may come in from its network."""
+    RULE = ('ufw', 'allow', 'in', 'on', 'wlan0', 'from', '192.168.1.0/24', 'to', 'any', 'port', '4747', 'proto', 'udp')
+
+    def go_firewall(self, answers, sudo_works=True):
+        setup, out = self.make(FakeBoard(), answers=answers)
+        setup.firewall_blocks = lambda: True
+        which, run = setup.which, setup.run
+        setup.which = lambda name: '/usr/bin/sudo' if name == 'sudo' else which(name)
+        setup.run = lambda *cmd, timeout=30: (self.commands.append(cmd), (0 if sudo_works else 1, ''))[1] if cmd[0] == 'sudo' else run(*cmd, timeout=timeout)
+        return setup, setup.main(), out.getvalue()
+
+    def sudo(self):
+        return [c[1:] for c in self.commands if c[0] == 'sudo']
+
+    def test_opens_the_port_to_the_buddys_network_once(self):
+        _, code, text = self.go_firewall(['n', 'y'])   # fish: no, firewall: yes
+        self.assertEqual(code, 0)
+        self.assertEqual(self.sudo(), [self.RULE + ('comment', 'Monitor Buddy hello')])
+        self.assertIn("the firewall lets the Buddy's hello in from 192.168.1.0/24", text)
+        _, _, text = self.go_firewall([])
+        self.assertEqual(self.sudo(), [], 'a second run asks for no password')
+        self.assertIn("lets the Buddy's hello in", text)
+
+    def test_left_closed_when_declined(self):
+        _, _, text = self.go_firewall(['n', 'n'])
+        self.assertEqual(self.sudo(), [])
+        self.assertNotIn("lets the Buddy's hello in", text)
+
+    def test_a_failed_sudo_leaves_it_to_do(self):
+        setup, _, text = self.go_firewall(['n', 'y'], sudo_works=False)
+        self.assertIn("The firewall still drops the Buddy's hello.", text)
+        self.assertNotIn('firewall', setup.state['done'])
+
+    def test_undo_takes_the_rule_out(self):
+        setup, _, _ = self.go_firewall(['n', 'y'])
+        self.commands.clear()
+        setup.undo()
+        self.assertIn(('ufw', 'delete') + self.RULE[1:], self.sudo())
+        self.assertNotIn('firewall', setup.state['done'])
 
 
 class ClaudeHook(unittest.TestCase):

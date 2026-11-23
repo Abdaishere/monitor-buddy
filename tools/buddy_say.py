@@ -7,7 +7,7 @@ Room for about 100 characters. A tap on the Buddy puts the line away.
 """
 import sys
 
-from buddy_link import ADDRESS_FILE, NO_LINK_KEY, link_cipher, send_wifi
+from buddy_link import ADDRESS_FILE, NO_ADDRESS, NO_LINK_KEY, link_cipher, send_wifi
 
 
 def say(text):
@@ -20,7 +20,7 @@ def say(text):
         with open(ADDRESS_FILE) as file:
             address = file.read().strip()
     except OSError:
-        return 'This computer does not know where the Buddy is yet. Plug it in by USB for a minute, then try again.'
+        return NO_ADDRESS
     for _ in range(3):
         if send_wifi(cipher, address, b'S' + text.encode()[:110]) is not None:
             return None

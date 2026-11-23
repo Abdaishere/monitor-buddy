@@ -34,9 +34,11 @@ It stops by itself a few minutes after the page was closed. Only Python's
 standard library is used here.
 """
 import argparse
+import base64
 import hmac
 import json
 import os
+import re
 import secrets
 import shutil
 import socket
@@ -52,7 +54,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
-import buddy_setup   # noqa: E402  (standard library only at import time)
+import buddy_setup  # noqa: E402  (standard library only at import time)
 
 PAGE = os.path.join(TOOLS, 'app', 'index.html')
 ICON = os.path.join(TOOLS, 'app', 'icon.svg')
@@ -76,7 +78,9 @@ BACKUPS_KEPT = 30
 ESPRESSIF = 0x303A   # the USB vendor of the Buddy's chip
 IDLE_S = 180        # the page asks every 20 s while it is open
 SAY_MAX = 100       # characters the Buddy has room for
-OPTIONAL = ('odoo', 'claude', 'fish')
+BODY_MAX = 16384
+UPLOAD_MAX = {'/api/gifs/add': 16 << 20, '/api/picture': 32768}   # a GIF before it is made to fit, and the picture, as base64
+OPTIONAL = ('odoo', 'claude', 'fish', 'firewall')
 # The settings the app's "Make it yours" tab may change. Wi-Fi, the city and the
 # stock and coin lists stay with the installer page, which has the searches for them.
 EDITABLE = ('name', 'buddy_name', 'face', 'greeting', 'greeting_text', 'work', 'weekend', 'birthday', 'break_min', 'water',
@@ -87,7 +91,7 @@ WRITE_ONLY = ('stock_key',)
 ZONES = os.path.join(TOOLS, '..', 'web', 'vendor', 'posix_tz_db', 'zones.json')   # IANA zone -> POSIX rule, as the installer uses
 CITY_SEARCH = 'https://geocoding-api.open-meteo.com/v1/search?count=8&language=en&format=json&name='
 NO_BOARD = 'Plug the Buddy into this computer with its USB cable, then try again.'
-PACKAGES = {'cryptography': 'python3-cryptography', 'serial': 'python3-serial', 'dateutil': 'python3-dateutil'}
+PACKAGES = {'cryptography': 'python3-cryptography', 'serial': 'python3-serial', 'dateutil': 'python3-dateutil', 'PIL': 'python3-pil'}
 if not LINUX:   # the editor needs the serial port only; the rest is the Linux helper's
     PACKAGES = {'serial': 'pyserial'}
 
@@ -134,13 +138,14 @@ class App:
     the tests and --demo pass one that touches nothing real."""
 
     def __init__(self, make_setup=Recorder, say=None, run=None, fetch=None, linux=LINUX, data=DATA, ports=usb_ports,
-                 open_board=buddy_setup.Board, port=None):
+                 open_board=buddy_setup.Board, port=None, put=None):
         self._fetch = fetch or (lambda url: urllib.request.urlopen(url, timeout=10).read())
         self.make_setup = make_setup
         self.linux = linux           # False: no helper, no systemd; the Buddy is found among the serial ports
         self.data = data             # the folder of the earlier settings
         self._ports, self._open_board, self.port = ports, open_board, port
         self._say = say
+        self._put = put      # tools/buddy_put.py, or a stand-in
         self._run = run or (lambda *cmd: subprocess.run(cmd, capture_output=True, text=True, timeout=600).returncode)
         self.lock = threading.Lock()
         self.job = None      # the setup that runs, or ran last: {'setup', 'done', 'failed'}
@@ -424,6 +429,65 @@ class App:
         problem = self._say(text)
         return {'ok': problem is None, 'error': problem, 'text': text}
 
+    # ── pictures: over Wi-Fi, like say ────────────────────────────────────
+    def _over_wifi(self, work):
+        """work(put, cipher, address) with the paired Buddy, as the page's answer."""
+        if self._put is None:
+            if not self.linux:
+                return {'ok': False, 'error': 'Pictures go to the Buddy over Wi-Fi with the key the Linux setup makes. '
+                                              'This computer has not been paired that way.'}
+            if self.missing_packages():
+                return {'ok': False, 'error': 'Finish the setup first.'}
+            import buddy_put
+            self._put = buddy_put
+        try:
+            return dict(work(self._put, *self._put.buddy()), ok=True)
+        except self._put.Refused as error:
+            return {'ok': False, 'error': str(error)}
+
+    def animations(self):
+        return self._over_wifi(lambda put, cipher, address: put.animations(cipher, address))
+
+    def add_animation(self, name, data):
+        """A GIF from the page, made to fit the Buddy (tools/buddy_gif.py), under a name the Buddy takes."""
+        try:
+            gif = base64.b64decode(str(data), validate=True)
+        except ValueError:
+            return {'ok': False, 'error': 'bad request'}
+        stem = re.sub(r'[^A-Za-z0-9._-]', '-', os.path.splitext(os.path.basename(str(name)))[0]).lstrip('.')
+        name = (stem[:36] or 'animation') + '.gif'
+
+        def work(put, cipher, address):
+            import buddy_gif
+            with tempfile.TemporaryDirectory() as folder:
+                source, fitted = os.path.join(folder, 'in'), os.path.join(folder, 'out.gif')
+                with open(source, 'wb') as file:
+                    file.write(gif)
+                try:
+                    buddy_gif.convert(source, fitted)
+                except Exception:   # Pillow raises one of many kinds for a file it cannot read
+                    raise put.Refused(f'{name} is not a picture this computer can read.') from None
+                with open(fitted, 'rb') as file:
+                    put.put(cipher, address, name, file.read())
+            return dict(put.animations(cipher, address), added=name)
+        return self._over_wifi(work)
+
+    def remove_animation(self, name):
+        def work(put, cipher, address):
+            put.remove(cipher, address, str(name))
+            return put.animations(cipher, address)
+        return self._over_wifi(work)
+
+    def picture(self, data):
+        """The GitHub page's own picture (88x88 RGB565 from the page, as base64), or None for the GitHub one again."""
+        try:
+            pixels = b'' if data is None else base64.b64decode(str(data), validate=True)
+        except ValueError:
+            pixels = None
+        if pixels is None or len(pixels) not in (0, 88 * 88 * 2):
+            return {'ok': False, 'error': 'bad request'}
+        return self._over_wifi(lambda put, cipher, address: put.picture(cipher, address, pixels) or {})
+
 
 def make_handler(app, token, state):
     class Handler(BaseHTTPRequestHandler):
@@ -482,20 +546,22 @@ def make_handler(app, token, state):
                 return self._send(200, app.city(query))
             if path == '/api/ping':
                 return self._send(200, {'ok': True})
+            if path == '/api/gifs':
+                return self._send(200, app.animations())
             self._send(404, {'error': 'not found'})
 
         def do_POST(self):
             state['seen'] = time.monotonic()
             if not self._allowed():
                 return self._send(403, {'error': 'not for you'})
+            path = self.path.split('?', 1)[0]
             try:
                 size = int(self.headers.get('Content-Length', '0'))
-                body = json.loads(self.rfile.read(size) or b'{}') if 0 <= size <= 16384 else None
+                body = json.loads(self.rfile.read(size) or b'{}') if 0 <= size <= UPLOAD_MAX.get(path, BODY_MAX) else None
             except ValueError:
                 body = None
             if not isinstance(body, dict):
                 return self._send(400, {'error': 'bad request'})
-            path = self.path.split('?', 1)[0]
             if path == '/api/setup':
                 return self._send(200, app.start_setup(body))
             if path == '/api/settings':
@@ -506,6 +572,12 @@ def make_handler(app, token, state):
                 return self._send(200, app.say(body.get('text', '')))
             if path == '/api/install':
                 return self._send(200, app.install_packages())
+            if path == '/api/gifs/add':
+                return self._send(200, app.add_animation(body.get('name', ''), body.get('data', '')))
+            if path == '/api/gifs/remove':
+                return self._send(200, app.remove_animation(body.get('name', '')))
+            if path == '/api/picture':
+                return self._send(200, app.picture(body.get('data')))
             self._send(404, {'error': 'not found'})
 
     return Handler
